@@ -1,23 +1,15 @@
 #include <fstream>
 #include "sstream"
 #include "../lexer/lexer.h"
-
-void printUsage()
-{
-    std::cout << "Usage: low <file.low>" << std::endl;
-}
+#include "../parseArgs/parseArgs.h"
 
 int main(int argc, char** argv)
 {
-    if(argc < 2) {
-        std::cerr << "Incorrect usage, must specify input file.\n";
-        printUsage();
-        return 1;
-    }
-
-    std::ifstream srcFile(argv[1]);
+    parseArgs args(argc, argv);
+    
+    std::ifstream srcFile(args["input"]);
     if(!srcFile){
-        std::cerr << "Error: could not open file \"" << argv[1] << "\"." << std::endl;
+        std::cerr << "Error: could not open file \"" << args["input"] << "\"." << std::endl;
         exit(1);
     }
     std::stringstream fileStream;

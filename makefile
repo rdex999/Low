@@ -1,5 +1,5 @@
 s = ./source/
-files = $(s)main/main.cpp $(s)lexer/lexer.cpp
+files = $(s)main/main.cpp $(s)lexer/lexer.cpp $(s)parseArgs/parseArgs.cpp
 flags = -Wall -std=c++23
 cc = g++
 binary = low
