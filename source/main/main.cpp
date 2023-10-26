@@ -50,7 +50,7 @@ int main(int argc, char** argv)
         std::ofstream outAsm(args["tempDirName"][0] + '/' + filename + ".asm");
         outAsm << generatedAsm.outAsm;
         outAsm.close();
-        
+
         system(("nasm -o " + args["tempDirName"][0] + '/' + filename + ".o -f" + args["format"][0] + ' ' +
             args["tempDirName"][0] + '/' + filename + ".asm")
             .c_str());

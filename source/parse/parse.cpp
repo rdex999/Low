@@ -22,12 +22,17 @@ parse::parse(const std::vector<token>* tokens)
 inline void parse::parseExit()
 {
     node::st st = node::st{.key = token{.type = tokenType::_exit}};
-    for(; tokens->at(index).type != tokenType::semicolon; index++)
+    for(; index < tokens->size(); index++)
     {
         switch (tokens->at(index).type)
         {
         case tokenType::intLit:
             st.vals.push_back(tokens->at(index));
+            break;
+
+        case tokenType::semicolon:
+            prog.sts.push_back(st);
+            return; 
             break;
 
         default:
@@ -37,5 +42,6 @@ inline void parse::parseExit()
         }
     }
 
-    prog.sts.push_back(st);
+    std::cerr << "Error, expected a smicolon (;)" << std::endl;
+    exit(1);
 }
