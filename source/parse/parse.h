@@ -14,4 +14,5 @@ class parse
         const std::vector<token>* tokens;
 
         inline void parseExit();
+        inline void parseInt();
 };

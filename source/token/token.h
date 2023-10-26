@@ -6,7 +6,10 @@ enum class tokenType
     _return,
     _exit,
     intLit,
-    semicolon
+    semicolon,
+    ident,
+    equal, // =
+    _int
 };
 
 typedef struct token

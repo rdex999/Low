@@ -37,6 +37,10 @@ int main(int argc, char** argv)
         std::string content = fileStream.str();
 
         std::vector<token> tokens = lexer(&content).createTokens();
+        //for(const token& t : tokens) {
+        //    std::cout << "Token type: " << (int)t.type << "\nvalue: " << t.value << '\n' << std::endl;
+        //}
+        
         parse prased(&tokens);
         genAsm generatedAsm(&prased.prog);
 
@@ -59,8 +63,9 @@ int main(int argc, char** argv)
     }
 
     system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + files).c_str());
-    
-    std::filesystem::remove_all(args["tempDirName"][0]);
+
+    // comment it out for debug 
+    //std::filesystem::remove_all(args["tempDirName"][0]);
 
     return 0;
 }
