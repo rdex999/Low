@@ -6,10 +6,10 @@
 int main(int argc, char** argv)
 {
     parseArgs args(argc, argv);
-    
-    std::ifstream srcFile(args["input"]);
+
+    std::ifstream srcFile(args["input"][0]);
     if(!srcFile){
-        std::cerr << "Error: could not open file \"" << args["input"] << "\"." << std::endl;
+        std::cerr << "Error: could not open file \"" << args["input"][0] << "\"." << std::endl;
         exit(1);
     }
     std::stringstream fileStream;
