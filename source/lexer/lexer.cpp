@@ -10,10 +10,10 @@ std::vector<token> lexer::createTokens()
 {
     std::string buffer;
     std::vector<token> tokens;
-    while(peak().has_value())
+    while(peek().has_value())
     {
-        if(std::isalpha(peak().value())){
-            while(peak().has_value() && std::isalpha(peak().value())){
+        if(std::isalpha(peek().value())){
+            while(peek().has_value() && std::isalpha(peek().value())){
                 buffer += take();
             }
 
@@ -27,8 +27,8 @@ std::vector<token> lexer::createTokens()
             buffer.clear();
             continue;
         
-        }else if(std::isdigit(peak().value())){
-            while(peak().has_value() && std::isdigit(peak().value())){
+        }else if(std::isdigit(peek().value())){
+            while(peek().has_value() && std::isdigit(peek().value())){
                 buffer += take();
             }
 
@@ -36,17 +36,17 @@ std::vector<token> lexer::createTokens()
             buffer.clear();
             continue;
         
-        }else if(std::isspace(peak().value())){
+        }else if(std::isspace(peek().value())){
             take();
             continue;
         
-        }else if(peak().value() == ';'){
+        }else if(peek().value() == ';'){
             take();
             tokens.push_back(token{.type = tokenType::semicolon});
             continue;
         
         }else{
-            std::cerr << "Error: unknown symbol: '" << peak().value() << "'." << std::endl;
+            std::cerr << "Error: unknown symbol: '" << peek().value() << "'." << std::endl;
             exit(1);
         }
 
@@ -56,12 +56,12 @@ std::vector<token> lexer::createTokens()
     return tokens;
 }
 
-inline std::optional<char> lexer::peak(int amount)
+inline std::optional<char> lexer::peek(int amount)
 {
-    if(index + amount > src.length()){
+    if(index + amount >= src.length()){
         return {};
     }else{
-        return src.at(index);
+        return src.at(index + amount);
     }
 }
 

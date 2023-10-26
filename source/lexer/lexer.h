@@ -15,7 +15,7 @@ class lexer
         std::string src;
         unsigned int index = 0;
 
-        inline std::optional<char> peak(int amount = 1);
+        inline std::optional<char> peek(int amount = 0);
 
         inline char take();
 };

@@ -1,6 +1,7 @@
 #include <fstream>
 #include "sstream"
 #include "../lexer/lexer.h"
+#include "../parse/parse.h"
 #include "../parseArgs/parseArgs.h"
 
 int main(int argc, char** argv)
@@ -17,13 +18,16 @@ int main(int argc, char** argv)
     srcFile.close();
     std::string content = fileStream.str();
     
-    for(token t : lexer(&content).createTokens()){
-        std::cout << "type: " << (int)t.type << "\ncontent: ";
-        if(t.value != ""){
-            std::cout << t.value << "\n" << std::endl;
-        }else{
-            std::cout << "\n" << std::endl;
+    std::vector<token> tokens = lexer(&content).createTokens();
+    parse prased(&tokens);
+
+    for(const node::st& st : prased.prog.sts)
+    {
+        std::cout << "statement of " << (int)st.key.type << "\nwith value of ";
+        for(const token& t : st.vals){
+            std::cout << t.value << " ";
         }
+        std::cout << std::endl;
     }
 
     return 0;
