@@ -34,9 +34,8 @@ int main(int argc, char** argv)
         std::stringstream fileStream;
         fileStream << srcFile.rdbuf();
         srcFile.close();
-        std::string content = fileStream.str();
 
-        std::vector<token> tokens = lexer(&content).createTokens();
+        std::vector<token> tokens = lexer(fileStream.str()).createTokens();
         //for(const token& t : tokens) {
         //    std::cout << "Token type: " << (int)t.type << "\nvalue: " << t.value << '\n' << std::endl;
         //}

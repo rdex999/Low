@@ -1,8 +1,8 @@
 #include "lexer.h"
 
-lexer::lexer(const std::string* src)
+lexer::lexer(std::string src)
 {
-    this->src = *src;
+    this->src = std::move(src);
     index = 0;
 }
 

@@ -7,7 +7,7 @@
 class lexer
 {
     public:
-        lexer(const std::string* src);
+        lexer(std::string src);
 
         std::vector<token> createTokens();
 
