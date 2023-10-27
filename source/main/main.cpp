@@ -44,22 +44,15 @@ int main(int argc, char** argv)
         parse prased(&tokens);
         genAsm generatedAsm(&prased.prog);
 
-        if(!std::filesystem::create_directory(args["tempDirName"][0])){
-            std::cerr << "Error, failed to create temp build directory.\nMade sure there is no directory called 'lowTempBuildDirectory'"
-                << std::endl;
-
-            return 1;
-        }
-        
+        std::filesystem::create_directory(args["tempDirName"][0]);
         std::ofstream outAsm(args["tempDirName"][0] + '/' + filename + ".asm");
         outAsm << generatedAsm.outAsm.str();
         outAsm.close();
 
         system(("nasm -o " + args["tempDirName"][0] + '/' + filename + ".o -f" + args["format"][0] + ' ' +
-            args["tempDirName"][0] + '/' + filename + ".asm")
-            .c_str());
+            args["tempDirName"][0] + '/' + filename + ".asm").c_str());
 
-        files += args["tempDirName"][0] + '/' + filename + ".o";
+        files += args["tempDirName"][0] + '/' + filename + ".o ";
     }
 
     system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + files).c_str());

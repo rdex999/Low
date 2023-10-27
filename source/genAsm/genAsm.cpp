@@ -13,22 +13,87 @@ genAsm::genAsm(const node::program* prog)
         case tokenType::_exit:
             genExit();
             break;
+
+        case tokenType::_int:
+            genInt();
+            break;
         
+        default:
+            break;
+        }
+    }
+
+    outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
+}
+
+void genAsm::genExpr(int valsIdx)
+{
+    for(size_t i=valsIdx; i<prog->sts.at(index).vals.size(); i++)
+    {
+        switch (prog->sts.at(index).vals.at(i).type)
+        {
+        case tokenType::intLit:
+            outAsm << "mov rax, " << prog->sts.at(index).vals.at(i).value << "\n\t";
+            push("rax");
+            break;
+
+        case tokenType::ident:
+            if(vars.contains(prog->sts.at(index).vals.at(i).value)){
+                outAsm << "push QWORD [rsp + " << (stackLoc - vars[prog->sts.at(index).vals.at(i).value].stackLoc) * 8 << "]\n\t";
+                stackLoc++;
+            }else{
+                std::cerr << "Error, '" << prog->sts.at(index).vals.at(i).value << "' is not defined." << std::endl;
+                exit(1);
+            }
+            break;
+
         default:
             break;
         }
     }
 }
 
+void genAsm::push(const char *reg)
+{
+    outAsm << "push " << reg << "\n\t";
+    stackLoc++;
+}
+
+void genAsm::pop(const char *reg)
+{
+    outAsm << "pop " << reg << "\n\t";
+    stackLoc--;
+}
+
 inline void genAsm::genExit()
 {
-    outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(0).value << "\n\tsyscall";
+    if(prog->sts.at(index).vals.at(0).type == tokenType::intLit && prog->sts.at(index).vals.size() == 1){
+        outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(0).value << "\n\tsyscall\n\t";
+    }else{
+        genExpr();
+        outAsm << "mov rax, 60\n\t" << "pop rdi\n\tsyscall\n\t";
+    }
 }
 
-inline void genAsm::pusha()
+inline void genAsm::genInt()
 {
-}
+    if(prog->sts.at(index).vals.size() > 1 && vars.contains(prog->sts.at(index).vals.at(0).value)){
+        std::cerr << "Error, variable '" << prog->sts.at(index).vals.at(0).value << "' has already been declared." << std::endl;
+        exit(1);
+    }
 
-inline void genAsm::popa()
-{
+    if(2 < prog->sts.at(index).vals.size() &&
+        prog->sts.at(index).vals.at(0).type == tokenType::ident &&
+        prog->sts.at(index).vals.at(1).type == tokenType::equal)
+    {
+
+        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+1;
+        genExpr(2);
+
+    }else{
+
+        // will be possible in the future tho
+        std::cerr << "Error, cannot declare variable without a value." << std::endl;
+        exit(1);
+    }
 }

@@ -35,6 +35,10 @@ inline void parse::parseExit()
             st.vals.push_back(tokens->at(index));
             break;
 
+        case tokenType::ident:
+            st.vals.push_back(tokens->at(index));
+            break;
+
         case tokenType::semicolon:
             prog.sts.push_back(st);
             return; 

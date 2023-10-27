@@ -27,7 +27,6 @@ std::vector<token> lexer::createTokens()
             }
 
             else{
-                buffer += take();
                 tokens.push_back(token{.type = tokenType::ident, .value = buffer});
             }
             buffer.clear();
@@ -37,7 +36,6 @@ std::vector<token> lexer::createTokens()
             while(peek().has_value() && std::isdigit(peek().value())){
                 buffer += take();
             }
-
             tokens.push_back(token{.type = tokenType::intLit, .value = buffer});
             buffer.clear();
             continue;
