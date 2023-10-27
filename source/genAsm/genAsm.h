@@ -7,7 +7,7 @@ class genAsm
     public: 
         genAsm(const node::program* prog);
 
-        std::string outAsm;
+        std::stringstream outAsm;
     
     private:
         inline void genExit();

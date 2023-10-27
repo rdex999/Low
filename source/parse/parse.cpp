@@ -60,34 +60,28 @@ inline void parse::parseInt()
         {
         case tokenType::semicolon:
             prog.sts.push_back(st);
-            std::cout << "semi" << std::endl;
             return;
             break;
 
         case tokenType::ident:
             st.vals.push_back(token{.type = tokenType::ident, .value = tokens->at(index).value});
-            std::cout << "found ident " << tokens->at(index).value << std::endl;
             break;
 
         case tokenType::equal:
             st.vals.push_back(token{.type = tokenType::equal, .value = tokens->at(index).value}) ;
-            std::cout << "found =" << std::endl;
             break;
         
         case tokenType::intLit:
             st.vals.push_back(token{.type = tokenType::intLit, .value = tokens->at(index).value});
-            std::cout << "found intLit " << tokens->at(index).value << std::endl;
             break;
 
         default:
             std::cerr << "Error, expected smicolon (;)" << std::endl;
-            std::cerr << "switch, parseInt" << std::endl;
             exit(1);
             break;
         }
     }
 
     std::cerr << "Error, expected smicolon (;)" << std::endl;
-    std::cerr << "parseInt end" << std::endl;
     exit(1);
 }
