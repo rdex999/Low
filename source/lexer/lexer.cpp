@@ -10,10 +10,10 @@ std::vector<token> lexer::createTokens()
 {
     std::string buffer;
     std::vector<token> tokens;
-    while(peek().has_value())
+    for(index = 0; index < src.size();) 
     {
-        if(std::isalpha(peek().value())){
-            while(peek().has_value() && std::isalnum(peek().value())){
+        if(std::isalpha(src[index])){
+            while(index < src.size() && std::isalnum(src[index])){
                 buffer += take();
             }
 
@@ -32,8 +32,8 @@ std::vector<token> lexer::createTokens()
             buffer.clear();
             continue;
         
-        }else if(std::isdigit(peek().value())){
-            while(peek().has_value() && std::isdigit(peek().value())){
+        }else if(std::isdigit(src[index])){
+            while(index < src.size() && std::isdigit(src[index])){
                 buffer += take();
             }
             tokens.push_back(token{.type = tokenType::intLit, .value = buffer});
@@ -41,17 +41,17 @@ std::vector<token> lexer::createTokens()
             continue;
         }
 
-        else if(std::isspace(peek().value())){
+        else if(std::isspace(src[index])){
             take();
             continue;
         
-        }else if(peek().value() == ';'){
+        }else if(src[index] == ';'){
             take();
             tokens.push_back(token{.type = tokenType::semicolon});
             continue;
         }
-        else if(!std::isalnum(peek().value())){
-            while (!std::isalnum(peek().value()) && !std::isspace(peek().value())){
+        else if(!std::isalnum(src[index])){
+            while (!std::isalnum(src[index]) && !std::isspace(src[index])){
                 buffer += take();
             }
 
@@ -69,7 +69,7 @@ std::vector<token> lexer::createTokens()
         }
 
         else{
-            std::cerr << "Error: unknown symbol: '" << peek().value() << "'." << std::endl;
+            std::cerr << "Error: unknown symbol: '" << src[index] << "'." << std::endl;
             exit(1);
         }
 
@@ -77,15 +77,6 @@ std::vector<token> lexer::createTokens()
 
     index = 0;
     return tokens;
-}
-
-inline std::optional<char> lexer::peek(int amount)
-{
-    if(index + amount >= src.length()){
-        return {};
-    }else{
-        return src.at(index + amount);
-    }
 }
 
 inline char lexer::take()
