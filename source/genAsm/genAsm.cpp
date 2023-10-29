@@ -63,9 +63,24 @@ void genAsm::genExpr(int valsIdx, int offset)
             
             break;
 
+        case tokenType::sub:
+            if(i >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
+                exit(1);
+            }
+
+            i++;
+            genExpr(i, 1);
+            pop("rax");
+            pop("rbx");
+            outAsm << "sub rbx, rax\n\t";
+            push("rbx");
+            
+            break;           
+
         default:
             // TODO: think of an error
-            std::cerr << "Error, unknown." << std::endl;
+            std::cerr << "Error, unknown. (forgot a smicolon?)" << std::endl;
             exit(1);
             break;
         }

@@ -1,2 +1,3 @@
-int myVariable = 20+13;
+int add = 43;
+int myVariable = add - 20;
 exit myVariable; 
