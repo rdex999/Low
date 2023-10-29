@@ -58,7 +58,23 @@ std::vector<token> lexer::createTokens()
             if(buffer == "="){
                 tokens.push_back(token{.type = tokenType::equal});
             }
-            
+
+            else if(buffer == "+"){
+                tokens.push_back(token{.type = tokenType::add});
+            }
+
+            else if(buffer == "-"){
+                tokens.push_back(token{.type = tokenType::sub});
+            }
+
+            else if(buffer == "*"){
+                tokens.push_back(token{.type = tokenType::mul});
+            }
+
+            else if(buffer == "/"){
+                tokens.push_back(token{.type = tokenType::div});
+            }
+
             else{
                 std::cerr << "Error, not a valid operator '" << buffer << "'." << std::endl;
                 exit(1);

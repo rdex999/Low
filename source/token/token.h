@@ -9,7 +9,11 @@ enum class tokenType
     semicolon,
     ident,
     equal, // =
-    _int
+    _int,
+    add, // +
+    sub, // -
+    mul, // *
+    div, // /
 };
 
 typedef struct token

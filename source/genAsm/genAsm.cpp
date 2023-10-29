@@ -26,9 +26,10 @@ genAsm::genAsm(const node::program* prog)
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
 }
 
-void genAsm::genExpr(int valsIdx)
+void genAsm::genExpr(int valsIdx, int offset)
 {
-    for(size_t i=valsIdx; i<prog->sts.at(index).vals.size(); i++)
+    int to = offset == -1 ? prog->sts.at(index).vals.size() : (valsIdx + offset);
+    for(size_t i=valsIdx; i < to; i++)
     {
         switch (prog->sts.at(index).vals.at(i).type)
         {
@@ -39,7 +40,7 @@ void genAsm::genExpr(int valsIdx)
 
         case tokenType::ident:
             if(vars.contains(prog->sts.at(index).vals.at(i).value)){
-                outAsm << "push QWORD [rsp + " << (stackLoc - vars[prog->sts.at(index).vals.at(i).value].stackLoc) * 8 << "]\n\t";
+                outAsm << "push QWORD [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(i).value].stackLoc) * 8) << "]\n\t";
                 stackLoc++;
             }else{
                 std::cerr << "Error, '" << prog->sts.at(index).vals.at(i).value << "' is not defined." << std::endl;
@@ -47,7 +48,25 @@ void genAsm::genExpr(int valsIdx)
             }
             break;
 
+        case tokenType::add:
+            if(i >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
+                exit(1);
+            }
+
+            i++;
+            genExpr(i, 1);
+            pop("rax");
+            pop("rbx");
+            outAsm << "add rax, rbx\n\t";
+            push("rax");
+            
+            break;
+
         default:
+            // TODO: think of an error
+            std::cerr << "Error, unknown." << std::endl;
+            exit(1);
             break;
         }
     }

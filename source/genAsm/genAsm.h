@@ -29,7 +29,7 @@ class genAsm
         void push(const char* reg);
         void pop(const char* reg);
         
-        void genExpr(int valsIdx = 0);
+        void genExpr(int valsIdx = 0, int offset = -1);
         
         inline void genExit();
         inline void genInt();
