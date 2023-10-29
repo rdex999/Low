@@ -1,1 +1,7 @@
 .vscode
+
+build/
+build/*
+build/.*
+
+lowTempBuildDirectory/
