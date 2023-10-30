@@ -36,9 +36,6 @@ int main(int argc, char** argv)
         srcFile.close();
 
         std::vector<token> tokens = lexer(fileStream.str()).createTokens();
-        //for(const token& t : tokens) {
-        //    std::cout << "Token type: " << (int)t.type << "\nvalue: " << t.value << '\n' << std::endl;
-        //}
         
         parse prased(&tokens);
         genAsm generatedAsm(&prased.prog);
@@ -52,6 +49,12 @@ int main(int argc, char** argv)
             args["tempDirName"][0] + '/' + filename + ".asm").c_str());
 
         files += args["tempDirName"][0] + '/' + filename + ".o ";
+    }
+
+    if(args.args.contains("obj")){
+        for(const std::string& objFile : args["obj"]){
+            files += objFile + ' ';
+        }
     }
 
     system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + files).c_str());

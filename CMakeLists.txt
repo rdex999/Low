@@ -6,8 +6,10 @@ enable_testing()
 
 add_executable(low source/main/main.cpp)
 
+target_compile_features(low PUBLIC cxx_std_23)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 

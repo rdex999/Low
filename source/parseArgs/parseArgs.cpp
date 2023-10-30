@@ -52,6 +52,10 @@ parseArgs::parseArgs(int argc, char **argv)
             args["input"].push_back(arg);
         }
 
+        else if(arg.ends_with(".o") || arg.ends_with(".obj")){
+            args["obj"].push_back(arg);
+        }
+
         else if(arg[0] == '-'){
             std::cerr << "Error, unknown argument \"" << arg << "\"." << std::endl;
             exit(1);
@@ -59,7 +63,7 @@ parseArgs::parseArgs(int argc, char **argv)
     }
 
     // check if an input file wasnt specified
-    if(args.find("input") == args.end()){
+    if(!args.contains("input") && !args.contains("obj")){
         std::cerr << "Incorrect usage, must specify at least one input file.\nRun 'low --help' for more info." << std::endl;
         exit(1);
     }
