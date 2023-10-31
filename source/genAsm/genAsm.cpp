@@ -26,12 +26,19 @@ genAsm::genAsm(const node::program* prog)
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
 }
 
-void genAsm::genExpr(int valsIdx)
+int genAsm::genExpr(int valsIdx)
 {
     for(int i=valsIdx; i<prog->sts.at(index).vals.size(); i++)
     {
         switch (prog->sts.at(index).vals.at(i).type)
         {
+        case tokenType::parenOpen:
+            i = genExpr(i+1);
+            break;
+        
+        case tokenType::parenClose:
+            return i; 
+        
         case tokenType::add:{
             if(i + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
@@ -44,6 +51,7 @@ void genAsm::genExpr(int valsIdx)
                 prog->sts.at(index).vals.at(i+2).type == tokenType::div))
             {
                 push("rdi");
+                
                 if(!genSingle(i+1, "rax")){
                     pop("rax");
                 }
@@ -53,11 +61,18 @@ void genAsm::genExpr(int valsIdx)
                 i += 3;
                 break;
             }else{
-                if(!genSingle(i+1, "rbx")){
-                    pop("rbx");
+                if(prog->sts.at(index).vals.at(i+1).type != tokenType::parenOpen){
+                    if(!genSingle(i+1, "rbx")){
+                        pop("rbx");
+                    }
+                    i++;
+                    outAsm << "add rdi, rbx\n\t";
+                }else{
+                    push("rdi");
+                    i = genExpr(i+2);
+                    pop("rdx");
+                    outAsm << "add rdi, rdx\n\t";
                 }
-                outAsm << "add rdi, rbx\n\t";
-                i++;
             }
             break;
         }
@@ -125,6 +140,7 @@ void genAsm::genExpr(int valsIdx)
             break;
         }
     }
+    return -1;
 }
 
 void genAsm::genMulDiv(int idx)
@@ -152,19 +168,17 @@ bool genAsm::genSingle(int idx, const char* reg)
     case tokenType::intLit:
         outAsm << "mov " << reg << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
         return true;
-        break;
 
     case tokenType::ident:
         outAsm << "push QWORD [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) * 8) << "]\n\t";
         stackLoc++; 
         return false; 
-        break;
 
     default:
-        std::cerr << "Error, unknown. (Forgot a semicolon?)" << std::endl;
-        exit(1);
         break;
     }
+    std::cerr << "Error, unknown. (Forgot a semicolon?)" << std::endl;
+    exit(1);
 }
 
 void genAsm::push(const char *reg)

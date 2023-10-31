@@ -51,7 +51,7 @@ std::vector<token> lexer::createTokens()
             continue;
         }
         else if(!std::isalnum(src[index])){
-            while (!std::isalnum(src[index]) && !std::isspace(src[index])){
+            while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';'){
                 buffer += take();
             }
 
@@ -73,6 +73,14 @@ std::vector<token> lexer::createTokens()
 
             else if(buffer == "/"){
                 tokens.push_back(token{.type = tokenType::div});
+            }
+
+            else if(buffer == "("){
+                tokens.push_back(token{.type = tokenType::parenOpen});
+            }
+
+            else if(buffer == ")"){
+                tokens.push_back(token{.type = tokenType::parenClose});
             }
 
             else{

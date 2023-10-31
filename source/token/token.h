@@ -14,6 +14,8 @@ enum class tokenType
     sub, // -
     mul, // *
     div, // /
+    parenOpen, // (
+    parenClose, // )
 };
 
 typedef struct token

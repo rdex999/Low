@@ -29,14 +29,14 @@ class genAsm
         void push(const char* reg);
         void pop(const char* reg);
 
-        // returns the final value in RDX
-        void genExpr(int valsIdx = 0);
+        // the final value is in RDX
+        // @returns {int} the index of i. used when there are parenthesis
+        int genExpr(int valsIdx = 0);
 
         // the result is in RDI
         void genMulDiv(int from);
         
-        // returns whether the final value is already in RAX
-        // true means its in RAX and false means its on the top of the stack  
+        // @returns {bool} true: result in reg false: result on stack 2
         // @param {const char*} reg
         // if not pushing to the stack then in which register to store in
         bool genSingle(int idx, const char* reg);
