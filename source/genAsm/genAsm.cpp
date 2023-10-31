@@ -105,6 +105,19 @@ void genAsm::genExpr(int valsIdx)
             break;
         }
 
+        case tokenType::div:{
+            if(i + 1 >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use division(/) operator without a value." << std::endl;
+                exit(1);
+            } 
+
+            outAsm << "mov rax, rdx\n\t";
+            genMulDiv(i);
+            outAsm << "mov rdx, rax\n\t";
+            i++;
+            break;
+        }
+
         default:
             if(!genSingle(i, "rdx")){
                 pop("rdx");
@@ -124,7 +137,11 @@ void genAsm::genMulDiv(int idx)
         outAsm << "mul rbx\n\t";
         
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::div){
-
+        if(!genSingle(idx+1, "rbx")){
+            pop("rbx");
+        }
+        outAsm << "mov rdx, 0\n\t";
+        outAsm << "div rbx\n\t";
     }
 }
 
