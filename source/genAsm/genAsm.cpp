@@ -43,20 +43,20 @@ void genAsm::genExpr(int valsIdx)
                 (prog->sts.at(index).vals.at(i+2).type == tokenType::mul ||
                 prog->sts.at(index).vals.at(i+2).type == tokenType::div))
             {
-                push("rdx");
+                push("rdi");
                 if(!genSingle(i+1, "rax")){
                     pop("rax");
                 }
                 genMulDiv(i+2);
-                pop("rdx");
-                outAsm << "add rdx, rax\n\t";
+                pop("rdi");
+                outAsm << "add rdi, rax\n\t";
                 i += 3;
                 break;
             }else{
                 if(!genSingle(i+1, "rbx")){
                     pop("rbx");
                 }
-                outAsm << "add rdx, rbx\n\t";
+                outAsm << "add rdi, rbx\n\t";
                 i++;
             }
             break;
@@ -73,20 +73,20 @@ void genAsm::genExpr(int valsIdx)
                 (prog->sts.at(index).vals.at(i+2).type == tokenType::mul ||
                 prog->sts.at(index).vals.at(i+2).type == tokenType::div))
             {
-                push("rdx");
+                push("rdi");
                 if(!genSingle(i+1, "rax")){
                     pop("rax");
                 }
                 genMulDiv(i+2);
-                pop("rdx");
-                outAsm << "sub rdx, rax\n\t";
+                pop("rdi");
+                outAsm << "sub rdi, rax\n\t";
                 i += 3;
                 break;
             }else{
                 if(!genSingle(i+1, "rbx")){
                     pop("rbx");
                 }
-                outAsm << "sub rdx, rbx\n\t";
+                outAsm << "sub rdi, rbx\n\t";
                 i++;
             }
             break;
@@ -98,9 +98,9 @@ void genAsm::genExpr(int valsIdx)
                 exit(1);
             } 
 
-            outAsm << "mov rax, rdx\n\t";
+            outAsm << "mov rax, rdi\n\t";
             genMulDiv(i);
-            outAsm << "mov rdx, rax\n\t";
+            outAsm << "mov rdi, rax\n\t";
             i++;
             break;
         }
@@ -111,16 +111,16 @@ void genAsm::genExpr(int valsIdx)
                 exit(1);
             } 
 
-            outAsm << "mov rax, rdx\n\t";
+            outAsm << "mov rax, rdi\n\t";
             genMulDiv(i);
-            outAsm << "mov rdx, rax\n\t";
+            outAsm << "mov rdi, rax\n\t";
             i++;
             break;
         }
 
         default:
-            if(!genSingle(i, "rdx")){
-                pop("rdx");
+            if(!genSingle(i, "rdi")){
+                pop("rdi");
             }
             break;
         }
@@ -186,7 +186,7 @@ inline void genAsm::genExit()
     }else{
         genExpr();
         outAsm << "mov rax, 60\n\t";
-        outAsm << "mov rdi, rdx\n\tsyscall\n\t";
+        outAsm << "syscall\n\t";
     }
 }
 
@@ -204,7 +204,7 @@ inline void genAsm::genInt()
 
         vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+1;
         genExpr(2);
-        push("rdx");
+        push("rdi");
 
     }else{
 

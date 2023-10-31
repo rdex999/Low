@@ -32,7 +32,7 @@ class genAsm
         // returns the final value in RDX
         void genExpr(int valsIdx = 0);
 
-        // the result is in RAX 
+        // the result is in RDI
         void genMulDiv(int from);
         
         // returns whether the final value is already in RAX
