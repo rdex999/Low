@@ -32,7 +32,7 @@ void genAsm::genExpr(int valsIdx)
     {
         switch (prog->sts.at(index).vals.at(i).type)
         {
-        case tokenType::add:
+        case tokenType::add:{
             if(i + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
                 exit(1);
@@ -60,6 +60,50 @@ void genAsm::genExpr(int valsIdx)
                 i++;
             }
             break;
+        }
+
+        case tokenType::sub:{
+            if(i + 1 >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
+                exit(1);
+            }
+
+            // i+2 is the next operator
+            if(i+2 < prog->sts.at(index).vals.size() &&
+                (prog->sts.at(index).vals.at(i+2).type == tokenType::mul ||
+                prog->sts.at(index).vals.at(i+2).type == tokenType::div))
+            {
+                push("rdx");
+                if(!genSingle(i+1, "rax")){
+                    pop("rax");
+                }
+                genMulDiv(i+2);
+                pop("rdx");
+                outAsm << "sub rdx, rax\n\t";
+                i += 3;
+                break;
+            }else{
+                if(!genSingle(i+1, "rbx")){
+                    pop("rbx");
+                }
+                outAsm << "sub rdx, rbx\n\t";
+                i++;
+            }
+            break;
+        }
+
+        case tokenType::mul:{
+            if(i + 1 >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use multiplication(*) operator without a value." << std::endl;
+                exit(1);
+            } 
+
+            outAsm << "mov rax, rdx\n\t";
+            genMulDiv(i);
+            outAsm << "mov rdx, rax\n\t";
+            i++;
+            break;
+        }
 
         default:
             if(!genSingle(i, "rdx")){

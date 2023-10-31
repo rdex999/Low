@@ -1,2 +1,2 @@
-int myVariable = 4 + 2 * 3 + 2;
-exit myVariable; 
+int x = 4 * 2 - 3;
+exit x;
