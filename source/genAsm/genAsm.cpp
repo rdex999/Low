@@ -26,64 +26,83 @@ genAsm::genAsm(const node::program* prog)
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
 }
 
-void genAsm::genExpr(int valsIdx, int offset)
+void genAsm::genExpr(int valsIdx)
 {
-    int to = offset == -1 ? prog->sts.at(index).vals.size() : (valsIdx + offset);
-    for(size_t i=valsIdx; i < to; i++)
+    for(int i=valsIdx; i<prog->sts.at(index).vals.size(); i++)
     {
         switch (prog->sts.at(index).vals.at(i).type)
         {
-        case tokenType::intLit:
-            outAsm << "mov rax, " << prog->sts.at(index).vals.at(i).value << "\n\t";
-            push("rax");
-            break;
-
-        case tokenType::ident:
-            if(vars.contains(prog->sts.at(index).vals.at(i).value)){
-                outAsm << "push QWORD [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(i).value].stackLoc) * 8) << "]\n\t";
-                stackLoc++;
-            }else{
-                std::cerr << "Error, '" << prog->sts.at(index).vals.at(i).value << "' is not defined." << std::endl;
-                exit(1);
-            }
-            break;
-
         case tokenType::add:
-            if(i >= prog->sts.at(index).vals.size()){
+            if(i + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
                 exit(1);
             }
 
-            i++;
-            genExpr(i, 1);
-            pop("rax");
-            pop("rbx");
-            outAsm << "add rax, rbx\n\t";
-            push("rax");
-            
-            break;
-
-        case tokenType::sub:
-            if(i >= prog->sts.at(index).vals.size()){
-                std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
-                exit(1);
+            // i+2 is the next operator
+            if(i+2 < prog->sts.at(index).vals.size() &&
+                (prog->sts.at(index).vals.at(i+2).type == tokenType::mul ||
+                prog->sts.at(index).vals.at(i+2).type == tokenType::div))
+            {
+                push("rdx");
+                if(!genSingle(i+1, "rax")){
+                    pop("rax");
+                }
+                genMulDiv(i+2);
+                pop("rdx");
+                outAsm << "add rdx, rax\n\t";
+                i += 3;
+                break;
+            }else{
+                if(!genSingle(i+1, "rbx")){
+                    pop("rbx");
+                }
+                outAsm << "add rdx, rbx\n\t";
+                i++;
             }
-
-            i++;
-            genExpr(i, 1);
-            pop("rax");
-            pop("rbx");
-            outAsm << "sub rbx, rax\n\t";
-            push("rbx");
-            
-            break;           
+            break;
 
         default:
-            // TODO: think of an error
-            std::cerr << "Error, unknown. (forgot a smicolon?)" << std::endl;
-            exit(1);
+            if(!genSingle(i, "rdx")){
+                pop("rdx");
+            }
             break;
         }
+    }
+}
+
+void genAsm::genMulDiv(int idx)
+{
+    if(prog->sts.at(index).vals.at(idx).type == tokenType::mul){
+        if(!genSingle(idx+1, "rbx")){
+            pop("rbx");
+        }
+
+        outAsm << "mul rbx\n\t";
+        
+    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::div){
+
+    }
+}
+
+bool genAsm::genSingle(int idx, const char* reg)
+{
+    switch (prog->sts.at(index).vals.at(idx).type)
+    {
+    case tokenType::intLit:
+        outAsm << "mov " << reg << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
+        return true;
+        break;
+
+    case tokenType::ident:
+        outAsm << "push QWORD [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) * 8) << "]\n\t";
+        stackLoc++; 
+        return false; 
+        break;
+
+    default:
+        std::cerr << "Error, unknown. (Forgot a semicolon?)" << std::endl;
+        exit(1);
+        break;
     }
 }
 
@@ -105,7 +124,8 @@ inline void genAsm::genExit()
         outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(0).value << "\n\tsyscall\n\t";
     }else{
         genExpr();
-        outAsm << "mov rax, 60\n\t" << "pop rdi\n\tsyscall\n\t";
+        outAsm << "mov rax, 60\n\t";
+        outAsm << "mov rdi, rdx\n\tsyscall\n\t";
     }
 }
 
@@ -123,6 +143,7 @@ inline void genAsm::genInt()
 
         vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+1;
         genExpr(2);
+        push("rdx");
 
     }else{
 
