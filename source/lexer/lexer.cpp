@@ -53,6 +53,10 @@ std::vector<token> lexer::createTokens()
         else if(!std::isalnum(src[index])){
             while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';'){
                 buffer += take();
+
+                if(src[index] == '(' || src[index] == ')'){
+                    break;
+                }
             }
 
             if(buffer == "="){
