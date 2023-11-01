@@ -59,7 +59,23 @@ std::vector<token> lexer::createTokens()
                 }
             }
 
-            if(buffer == "="){
+            if(buffer == "+="){
+                tokens.push_back(token{.type = tokenType::addEq});
+            }
+
+            else if(buffer == "-="){
+                tokens.push_back(token{.type = tokenType::subEq});
+            }
+
+            else if(buffer == "*="){
+                tokens.push_back(token{.type = tokenType::mulEq});
+            }
+
+            else if(buffer == "/="){
+                tokens.push_back(token{.type = tokenType::divEq});
+            }
+
+            else if(buffer == "="){
                 tokens.push_back(token{.type = tokenType::equal});
             }
 

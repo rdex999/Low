@@ -9,6 +9,10 @@ enum class tokenType
     semicolon,
     ident,
     equal, // =
+    addEq, // +=
+    subEq, // -=
+    mulEq, // *=
+    divEq, // /=
     _int,
     add, // +
     sub, // -

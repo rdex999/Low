@@ -264,6 +264,32 @@ inline void genAsm::genUpdateIdent()
             (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t";
         break;
 
+    case tokenType::addEq:
+        outAsm << "add QWORD [rsp + " <<
+            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t"; 
+        break;
+    
+    case tokenType::subEq:
+        outAsm << "sub QWORD [rsp + " <<
+            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t"; 
+        break;
+    
+    case tokenType::mulEq:
+        outAsm << "mov rax, rdi\n\t";
+        outAsm << "mul QWORD [rsp + " <<
+            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "]\n\t";
+        outAsm << "mov [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rax\n\t";
+        break;
+
+    case tokenType::divEq:
+        outAsm << "mov rdx, 0\n\t"; 
+        outAsm << "mov rax, [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8)
+            << "]\n\t";
+
+        outAsm << "div rdi\n\t";
+        outAsm << "mov [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rax\n\t";
+        break;
+
     default:
         break;
     }
