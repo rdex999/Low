@@ -13,5 +13,5 @@ class parse
         size_t index = 0;
         const std::vector<token>* tokens;
 
-        inline void parseSt(tokenType stType);
+        inline void parseSt(const token* t);
 };

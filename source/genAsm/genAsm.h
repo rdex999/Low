@@ -44,5 +44,5 @@ class genAsm
 
         inline void genExit();
         inline void genInt();
-
+        inline void genUpdateIdent();
 };

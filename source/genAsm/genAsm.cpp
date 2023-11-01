@@ -17,6 +17,10 @@ genAsm::genAsm(const node::program* prog)
         case tokenType::_int:
             genInt();
             break;
+
+        case tokenType::ident:
+            genUpdateIdent();
+            break;
         
         default:
             break;
@@ -187,9 +191,8 @@ bool genAsm::genSingle(int idx, const char* reg)
         return true;
 
     case tokenType::ident:
-        outAsm << "push QWORD [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) * 8) << "]\n\t";
-        stackLoc++; 
-        return false; 
+        outAsm << "mov " << reg << ", " << "[rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) * 8) << "]\n\t";
+        return true; 
 
     default:
         break;
@@ -242,5 +245,26 @@ inline void genAsm::genInt()
         // will be possible in the future tho
         std::cerr << "Error, cannot declare variable without a value." << std::endl;
         exit(1);
+    }
+}
+
+inline void genAsm::genUpdateIdent()
+{
+    if(!vars.contains(prog->sts.at(index).key.value)){
+        std::cerr << "Error, '" << prog->sts.at(index).key.value << "' is not declared." << std::endl;
+        exit(1);
+    }
+
+    genExpr(1);
+            // the operator, = += -= *= /= 
+    switch (prog->sts.at(index).vals.at(0).type)
+    {
+    case tokenType::equal:
+        outAsm << "mov QWORD [rsp + " <<
+            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t";
+        break;
+
+    default:
+        break;
     }
 }

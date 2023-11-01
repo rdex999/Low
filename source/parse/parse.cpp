@@ -6,15 +6,14 @@ parse::parse(const std::vector<token>* tokens)
 
     for(index=0; index < tokens->size(); index++)
     {
-        tokenType tType = tokens->at(index).type;
-        index++;
-        parseSt(tType);
+        parseSt(&tokens->at(index));
     }
 }
 
-inline void parse::parseSt(tokenType stType)
+inline void parse::parseSt(const token* t)
 {
-    node::st st = node::st{.key = stType};
+    node::st st = node::st{.key = *t};
+    index++;
     for(; index < tokens->size(); index++){
         if(tokens->at(index).type == tokenType::semicolon){
             prog.sts.push_back(st);
