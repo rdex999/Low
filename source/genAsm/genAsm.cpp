@@ -55,10 +55,9 @@ int genAsm::genExpr(int valsIdx)
                 if(!genSingle(i+1, "rax")){
                     pop("rax");
                 }
-                genMulDiv(i+2);
+                i = genMulDiv(i+2);
                 pop("rdi");
                 outAsm << "add rdi, rax\n\t";
-                i += 3;
                 break;
             }else{
                 if(prog->sts.at(index).vals.at(i+1).type != tokenType::parenOpen){
@@ -92,10 +91,9 @@ int genAsm::genExpr(int valsIdx)
                 if(!genSingle(i+1, "rax")){
                     pop("rax");
                 }
-                genMulDiv(i+2);
+                i = genMulDiv(i+2);
                 pop("rdi");
                 outAsm << "sub rdi, rax\n\t";
-                i += 3;
                 break;
             }else{
                 if(!genSingle(i+1, "rbx")){
@@ -114,9 +112,8 @@ int genAsm::genExpr(int valsIdx)
             } 
 
             outAsm << "mov rax, rdi\n\t";
-            genMulDiv(i);
+            i = genMulDiv(i);
             outAsm << "mov rdi, rax\n\t";
-            i++;
             break;
         }
 
@@ -127,9 +124,8 @@ int genAsm::genExpr(int valsIdx)
             } 
 
             outAsm << "mov rax, rdi\n\t";
-            genMulDiv(i);
+            i = genMulDiv(i);
             outAsm << "mov rdi, rax\n\t";
-            i++;
             break;
         }
 
@@ -143,22 +139,43 @@ int genAsm::genExpr(int valsIdx)
     return -1;
 }
 
-void genAsm::genMulDiv(int idx)
+int genAsm::genMulDiv(int idx)
 {
     if(prog->sts.at(index).vals.at(idx).type == tokenType::mul){
-        if(!genSingle(idx+1, "rbx")){
-            pop("rbx");
+        if(prog->sts.at(index).vals.at(idx+1).type != tokenType::parenOpen){
+            if(!genSingle(idx+1, "rbx")){
+                pop("rbx");
+            }
+            outAsm << "mul rbx\n\t";
+            return idx + 1;
+        }else{
+            push("rax");
+            int retVal = genExpr(idx + 2);
+            pop("rax");
+            outAsm << "mul rdi\n\t";
+            return retVal;
         }
 
-        outAsm << "mul rbx\n\t";
-        
+
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::div){
-        if(!genSingle(idx+1, "rbx")){
-            pop("rbx");
-        }
-        outAsm << "mov rdx, 0\n\t";
-        outAsm << "div rbx\n\t";
+        if(prog->sts.at(index).vals.at(idx+1).type != tokenType::parenOpen){
+            if(!genSingle(idx+1, "rbx")){
+                pop("rbx");
+            }
+            outAsm << "mov rdx, 0\n\t";
+            outAsm << "div rbx\n\t";
+            return idx + 1;
+        }else{
+            push("rax");
+            int retVal = genExpr(idx + 2);
+            pop("rax");
+            outAsm << "mov rdx, 0\n\t";
+            outAsm << "div rdi\n\t";
+            return retVal;
+        } 
     }
+
+    return -1;
 }
 
 bool genAsm::genSingle(int idx, const char* reg)

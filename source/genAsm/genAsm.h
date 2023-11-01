@@ -33,8 +33,9 @@ class genAsm
         // @returns {int} the index of i. used when there are parenthesis
         int genExpr(int valsIdx = 0);
 
-        // the result is in RDI
-        void genMulDiv(int from);
+        // the result is in RAX
+        // @returns {int} the index
+        int genMulDiv(int from);
         
         // @returns {bool} true: result in reg false: result on stack 2
         // @param {const char*} reg
