@@ -37,10 +37,9 @@ class genAsm
         // @returns {int} the index
         int genMulDiv(int from);
         
-        // @returns {bool} true: result in reg false: result on stack 2
+        // @returns {int} the index 
         // @param {const char*} reg
-        // if not pushing to the stack then in which register to store in
-        bool genSingle(int idx, const char* reg);
+        int genSingle(int idx, const char* reg);
 
         inline void genExit();
         inline void genInt();

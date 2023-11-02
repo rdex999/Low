@@ -32,9 +32,7 @@ std::vector<token> lexer::createTokens()
             buffer.clear();
             continue;
 
-                                                    // minus
-        }else if(std::isdigit(src[index]) || src[index] == '-'){
-            buffer += take();
+        }else if(std::isdigit(src[index])){
             while(index < src.size() && std::isdigit(src[index])){
                 buffer += take();
             }
