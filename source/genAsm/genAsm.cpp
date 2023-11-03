@@ -1,4 +1,5 @@
 #include "genAsm.h"
+#include "../macros/macros.h"
 
 genAsm::genAsm(const node::program* prog)
 {
@@ -49,9 +50,9 @@ int genAsm::genExpr(int valsIdx)
                 exit(1);
             }
 
-            push("rdi");
+            push("rdi", 8);
             i = genSingle(i + 1, "rbx");
-            pop("rdi");
+            pop("rdi", 8);
             outAsm << "add rdi, rbx\n\t";
 
             break;
@@ -63,9 +64,9 @@ int genAsm::genExpr(int valsIdx)
                 exit(1);
             }
 
-            push("rdi");
+            push("rdi", 8);
             i = genSingle(i + 1, "rbx");
-            pop("rdi");
+            pop("rdi", 8);
             outAsm << "sub rdi, rbx\n\t";
 
             break;
@@ -107,30 +108,30 @@ int genAsm::genMulDiv(int idx)
 {
     if(prog->sts.at(index).vals.at(idx).type == tokenType::mul){
         if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::parenOpen){
-            push("rax");
+            push("rax", 8);
             idx = genExpr(idx + 2);
-            pop("rax");
+            pop("rax", 8);
             outAsm << "mul rdi\n\t";
             return idx;
         }else{
-            push("rax");
+            push("rax", 8);
             idx = genSingle(idx + 1, "rbx");
-            pop("rax");
+            pop("rax", 8);
             outAsm << "mul rbx\n\t";
             return idx;
         }
 
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::div){
         if(prog->sts.at(index).vals.at(idx+1).type == tokenType::parenOpen){
-            push("rax");
+            push("rax", 8);
             idx = genExpr(idx + 2);
-            pop("rax");
+            pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
             return idx;
         }else{
-            push("rax");
+            push("rax", 8);
             idx = genSingle(idx + 1, "rbx");
-            pop("rax");
+            pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
             return idx;
         } 
@@ -145,11 +146,12 @@ int genAsm::genSingle(int idx, const char* reg)
     switch (prog->sts.at(index).vals.at(idx).type)
     {
     case tokenType::intLit:
-        outAsm << "mov " << reg << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
+        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
         break;
 
     case tokenType::ident:
-        outAsm << "mov " << reg << ", " << "[rsp + " << (int)(stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
+        outAsm << "mov " << selectReg(reg, vars[prog->sts.at(index).vals.at(idx).value].size) <<
+            ", DWORD" << " [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
         break;
 
     case tokenType::parenOpen:
@@ -179,16 +181,36 @@ int genAsm::genSingle(int idx, const char* reg)
     return retIdx;
 }
 
-void genAsm::push(const char *reg)
+void genAsm::push(const char *reg, int size, const char* word)
 {
-    outAsm << "push " << reg << "\n\t";
-    stackLoc += 8;
+    outAsm << "mov " << word << " [rsp + " << stackLoc << "], " << reg << "\n\t";
+    stackLoc += size;
 }
 
-void genAsm::pop(const char *reg)
+void genAsm::pop(const char *reg, int size, const char* word)
 {
-    outAsm << "pop " << reg << "\n\t";
-    stackLoc -= 8;
+    stackLoc -= size;
+    outAsm << "mov " << reg << ", " << word << "[rsp + " << stackLoc << "]\n\t";
+}
+
+std::string genAsm::selectReg(const char *reg, int size)
+{
+    std::stringstream ss;
+    switch (size)
+    {
+    case 8:
+        ss << 'r' << reg[1] << reg[2];
+        break;
+
+    case 4:
+        ss << 'e' << reg[1] << reg[2];
+        break; 
+
+    default:
+        return "";
+    }
+
+    return ss.str();
 }
 
 inline void genAsm::genExit()
@@ -214,9 +236,10 @@ inline void genAsm::genInt()
         prog->sts.at(index).vals.at(1).type == tokenType::equal)
     {
 
-        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+8;
+        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc + SIZE_INT;
+        vars[prog->sts.at(index).vals.at(0).value].size = 4;
         genExpr(2);
-        push("rdi");
+        push("edi", SIZE_INT, "DWORD");
 
     }else{
 

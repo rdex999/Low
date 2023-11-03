@@ -16,6 +16,7 @@ class genAsm
         struct var
         {
             size_t stackLoc;
+            int size; // in bytes (int = 4, char = 1..)
         };
         
 
@@ -26,8 +27,10 @@ class genAsm
         size_t index = 0;
         size_t stackLoc = 0;
         
-        void push(const char* reg);
-        void pop(const char* reg);
+        void push(const char* reg, int size, const char* word = "");
+        void pop(const char* reg, int size, const char* word = "");
+
+        std::string selectReg(const char* reg, int size);
 
         // the final value is in RDX
         // @returns {int} the index of i. used when there are parenthesis
