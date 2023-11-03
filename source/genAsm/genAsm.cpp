@@ -261,34 +261,41 @@ inline void genAsm::genUpdateIdent()
     switch (prog->sts.at(index).vals.at(0).type)
     {
     case tokenType::equal:
-        outAsm << "mov QWORD [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t";
+        outAsm << "mov DWORD [rsp + " <<
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
     case tokenType::addEq:
-        outAsm << "add QWORD [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t"; 
+        outAsm << "add DWORD [rsp + " <<
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
     
     case tokenType::subEq:
-        outAsm << "sub QWORD [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t"; 
+        outAsm << "sub DWORD [rsp + " <<
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
     
     case tokenType::mulEq:
         outAsm << "mov rax, rdi\n\t";
-        outAsm << "mul QWORD [rsp + " <<
+        outAsm << "mul DWORD [rsp + " <<
             (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "]\n\t";
-        outAsm << "mov [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rax\n\t";
+
+        outAsm << "mov DWORD [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " << 
+            selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
     case tokenType::divEq:
         outAsm << "mov rdx, 0\n\t"; 
-        outAsm << "mov rax, [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc)
+        outAsm << "mov " << selectReg("rax", vars[prog->sts.at(index).key.value].size) <<
+            ", DWORD [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc)
             << "]\n\t";
 
         outAsm << "div rdi\n\t";
-        outAsm << "mov [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rax\n\t";
+        outAsm << "mov DWORD [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
     default:
