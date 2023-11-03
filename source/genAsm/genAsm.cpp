@@ -149,7 +149,7 @@ int genAsm::genSingle(int idx, const char* reg)
         break;
 
     case tokenType::ident:
-        outAsm << "mov " << reg << ", " << "[rsp + " << (int)((stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) * 8) << "]\n\t";
+        outAsm << "mov " << reg << ", " << "[rsp + " << (int)(stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
         break;
 
     case tokenType::parenOpen:
@@ -182,13 +182,13 @@ int genAsm::genSingle(int idx, const char* reg)
 void genAsm::push(const char *reg)
 {
     outAsm << "push " << reg << "\n\t";
-    stackLoc++;
+    stackLoc += 8;
 }
 
 void genAsm::pop(const char *reg)
 {
     outAsm << "pop " << reg << "\n\t";
-    stackLoc--;
+    stackLoc -= 8;
 }
 
 inline void genAsm::genExit()
@@ -214,7 +214,7 @@ inline void genAsm::genInt()
         prog->sts.at(index).vals.at(1).type == tokenType::equal)
     {
 
-        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+1;
+        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc+8;
         genExpr(2);
         push("rdi");
 
@@ -239,33 +239,33 @@ inline void genAsm::genUpdateIdent()
     {
     case tokenType::equal:
         outAsm << "mov QWORD [rsp + " <<
-            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t";
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t";
         break;
 
     case tokenType::addEq:
         outAsm << "add QWORD [rsp + " <<
-            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t"; 
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t"; 
         break;
     
     case tokenType::subEq:
         outAsm << "sub QWORD [rsp + " <<
-            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rdi\n\t"; 
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rdi\n\t"; 
         break;
     
     case tokenType::mulEq:
         outAsm << "mov rax, rdi\n\t";
         outAsm << "mul QWORD [rsp + " <<
-            (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "]\n\t";
-        outAsm << "mov [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rax\n\t";
+            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "]\n\t";
+        outAsm << "mov [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rax\n\t";
         break;
 
     case tokenType::divEq:
         outAsm << "mov rdx, 0\n\t"; 
-        outAsm << "mov rax, [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8)
+        outAsm << "mov rax, [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc)
             << "]\n\t";
 
         outAsm << "div rdi\n\t";
-        outAsm << "mov [rsp + " << (int)((stackLoc - vars[prog->sts.at(index).key.value].stackLoc) * 8) << "], rax\n\t";
+        outAsm << "mov [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], rax\n\t";
         break;
 
     default:
