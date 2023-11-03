@@ -31,6 +31,7 @@ class genAsm
         void pop(const char* reg, int size, const char* word = "");
 
         std::string selectReg(const char* reg, int size);
+        std::string selectWord(int size);
 
         // the final value is in RDX
         // @returns {int} the index of i. used when there are parenthesis
