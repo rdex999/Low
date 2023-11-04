@@ -1,6 +1,6 @@
 int x = 10;
 x = 2*30/3;
 
-int aa = 4241;
+int aa = 42412385;
 
 exit x;

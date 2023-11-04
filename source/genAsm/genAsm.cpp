@@ -200,12 +200,24 @@ std::string genAsm::selectReg(const char *reg, int size)
     switch (size)
     {
     case 8:
-        ss << 'r' << reg[1] << reg[2];
+        ss << reg; 
         break;
 
     case 4:
         ss << 'e' << reg[1] << reg[2];
-        break; 
+        break;
+
+    case 2:
+        ss << reg[1] << "i";
+        break;
+
+    case 1:
+        if(reg[2] == 'x'){
+            ss << reg[1] << 'l';
+        }else if(reg[2] == 'i'){
+            ss << reg[1] << reg[2] << 'l';
+        }
+        break;
 
     default:
         return "";
