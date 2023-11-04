@@ -152,7 +152,7 @@ int genAsm::genSingle(int idx, const char* reg)
     case tokenType::ident:
         outAsm << "mov " << selectReg(reg, vars[prog->sts.at(index).vals.at(idx).value].size) <<
             ", " << selectWord(vars[prog->sts.at(index).vals.at(idx).value].size) <<
-            " [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
+            " [rsp + " << (int)(vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
         break;
 
     case tokenType::parenOpen:
@@ -255,7 +255,7 @@ inline void genAsm::genInt()
         prog->sts.at(index).vals.at(1).type == tokenType::equal)
     {
 
-        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc + SIZE_INT;
+        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc;
         vars[prog->sts.at(index).vals.at(0).value].size = 4;
         genExpr(2);
         push("edi", SIZE_INT, "DWORD");
@@ -282,21 +282,21 @@ inline void genAsm::genUpdateIdent()
     case tokenType::equal:
         outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
             " [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
             selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
     case tokenType::addEq:
         outAsm << "add " << selectWord(vars[prog->sts.at(index).key.value].size) <<
             " [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
             selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
     
     case tokenType::subEq:
         outAsm << "sub " << selectWord(vars[prog->sts.at(index).key.value].size) <<
             " [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
             selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
     
@@ -305,10 +305,10 @@ inline void genAsm::genUpdateIdent()
 
         outAsm << "mul " << selectWord(vars[prog->sts.at(index).key.value].size) <<
             " [rsp + " <<
-            (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "]\n\t";
+            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "]\n\t";
 
         outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " << 
+            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " << 
             selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
@@ -317,12 +317,12 @@ inline void genAsm::genUpdateIdent()
 
         outAsm << "mov " << selectReg("rax", vars[prog->sts.at(index).key.value].size) <<
             ", " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc)
+            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc)
             << "]\n\t";
 
         outAsm << "div rdi\n\t";
         outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(stackLoc - vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
+            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
             selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
         break;
 
