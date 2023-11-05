@@ -59,6 +59,6 @@ class genAsm
         inline void genInt();
         inline void genUpdateIdent();
         inline void genCurly();
-        inline void genPreIncDec(const char* reg = nullptr);
-        inline void genPostIncDec(const char* reg = nullptr);
+        inline void genPreIncDec(int idx, const char* reg = nullptr);
+        inline void genPostIncDec(int idx, const char* reg = nullptr);
 };

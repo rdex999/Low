@@ -30,7 +30,7 @@ genAsm::genAsm(const node::program* prog)
 
         case tokenType::pp:
         case tokenType::mm:
-            genPreIncDec();
+            genPreIncDec(0);
             break;
 
         default:
@@ -153,15 +153,30 @@ int genAsm::genMulDiv(int idx)
 int genAsm::genSingle(int idx, const char* reg)
 {
     int retIdx = idx;
-    switch (prog->sts.at(index).vals.at(idx).type)
+
+    if(prog->sts.at(index).vals.size() > retIdx + 1 &&
+        (prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::pp ||
+        prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::mm))
+    {
+        genPostIncDec(retIdx++, reg);
+        goto checkMulDiv;
+
+    }else if(prog->sts.at(index).vals.at(retIdx).type == tokenType::pp ||
+        prog->sts.at(index).vals.at(retIdx).type == tokenType::mm)
+    {
+        genPreIncDec(retIdx++, reg);
+        goto checkMulDiv;
+    }
+
+    switch (prog->sts.at(index).vals.at(retIdx).type)
     {
     case tokenType::intLit:
-        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
+        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
         break;
 
     case tokenType::ident:{
 
-        var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx).value), scopeStackLoc.size());
+        var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(retIdx).value), scopeStackLoc.size());
 
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
             " [rsp + " << (int)(v->stackLoc) << "]\n\t";
@@ -170,7 +185,7 @@ int genAsm::genSingle(int idx, const char* reg)
     }
 
     case tokenType::parenOpen:
-        retIdx = genExpr(idx + 1);
+        retIdx = genExpr(retIdx + 1);
         break;
 
     default:
@@ -179,16 +194,18 @@ int genAsm::genSingle(int idx, const char* reg)
         break;
     }
 
-    if(prog->sts.at(index).vals.size() > idx + 1 && 
-        (prog->sts.at(index).vals.at(idx + 1).type == tokenType::mul ||
-        prog->sts.at(index).vals.at(idx + 1).type == tokenType::div))
+    checkMulDiv:
+
+    if(prog->sts.at(index).vals.size() > retIdx + 1 && 
+        (prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::mul ||
+        prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::div))
     {
         bool isRax = true;
         if(std::string("rax") != reg){
             outAsm << "mov rax, " << reg << "\n\t";
             isRax = false; 
         }
-        retIdx = genMulDiv(idx + 1);
+        retIdx = genMulDiv(retIdx + 1);
         if(!isRax){
             outAsm << "mov " << reg << ", rax\n\t";
         }
@@ -348,7 +365,7 @@ inline void genAsm::genUpdateIdent()
 
     case tokenType::pp:
     case tokenType::mm:
-        genPostIncDec();
+        genPostIncDec(0);
         break;
 
     case tokenType::addEq:
@@ -414,14 +431,25 @@ inline void genAsm::genCurly()
     }
 }
 
-inline void genAsm::genPreIncDec(const char* reg)
+inline void genAsm::genPreIncDec(int idx, const char* reg)
 {
-    var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
-    if(prog->sts.at(index).key.type == tokenType::pp){
-        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    var* v = nullptr;
+    if(idx == 0){
+        v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
+        
+        if(prog->sts.at(index).key.type == tokenType::pp){
+            outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        }else if(prog->sts.at(index).key.type == tokenType::mm){
+            outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        }
+    }else{
+        v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx + 1).value), scopeStackLoc.size());
 
-    }else if(prog->sts.at(index).key.type == tokenType::mm){
-        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+            outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+            outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        }
     }
 
     if(reg){
@@ -430,18 +458,24 @@ inline void genAsm::genPreIncDec(const char* reg)
     }
 }
 
-inline void genAsm::genPostIncDec(const char* reg)
+inline void genAsm::genPostIncDec(int idx, const char* reg)
 {
-    var* v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
+    var* v = nullptr;
+    if(idx == 0){
+        v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
+    }else{
+        v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx).value, scopeStackLoc.size());
+        ++idx;
+    }
 
     if(reg){
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
 
-    if(prog->sts.at(index).vals.at(0).type == tokenType::pp){
+    if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
         outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     
-    }else if(prog->sts.at(index).vals.at(0).type == tokenType::mm){
+    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
         outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
 
