@@ -13,7 +13,14 @@ parse::parse(const std::vector<token>* tokens)
 inline void parse::parseSt(const token* t)
 {
     node::st st = node::st{.key = *t};
+    if(t->type == tokenType::curlyOpen ||
+        t->type == tokenType::curlyClose)
+    {
+        prog.sts.push_back(st);
+        return;
+    }
     index++;
+
     for(; index < tokens->size(); index++){
         if(tokens->at(index).type == tokenType::semicolon){
             prog.sts.push_back(st);
@@ -21,6 +28,13 @@ inline void parse::parseSt(const token* t)
         }
 
         st.vals.push_back(tokens->at(index));
+
+        if(tokens->at(index).type == tokenType::curlyOpen ||
+            tokens->at(index).type == tokenType::curlyClose)
+        {
+            prog.sts.push_back(st);
+            return;
+        }
     }
 
     std::cerr << "Error, expected smicolon(;)." << std::endl;

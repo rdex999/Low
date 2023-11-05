@@ -22,7 +22,12 @@ genAsm::genAsm(const node::program* prog)
         case tokenType::ident:
             genUpdateIdent();
             break;
-        
+
+        case tokenType::curlyOpen:
+        case tokenType::curlyClose:
+            genCurly();
+            break;
+
         default:
             break;
         }
@@ -149,11 +154,21 @@ int genAsm::genSingle(int idx, const char* reg)
         outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(idx).value << "\n\t";
         break;
 
-    case tokenType::ident:
-        outAsm << "mov " << selectReg(reg, vars[prog->sts.at(index).vals.at(idx).value].size) <<
-            ", " << selectWord(vars[prog->sts.at(index).vals.at(idx).value].size) <<
-            " [rsp + " << (int)(vars[prog->sts.at(index).vals.at(idx).value].stackLoc) << "]\n\t";
+    case tokenType::ident:{
+
+        var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx).value), scopeStackLoc.size());
+        if(!v){
+            std::cerr << "Error, identifier '" << prog->sts.at(index).vals.at(idx).value << "' is undeclared or not in this scope."
+                << std::endl;
+
+            exit(1);
+        }
+
+        outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+
         break;
+    }
 
     case tokenType::parenOpen:
         retIdx = genExpr(idx + 1);
@@ -182,7 +197,36 @@ int genAsm::genSingle(int idx, const char* reg)
     return retIdx;
 }
 
-void genAsm::push(const char *reg, int size, const char* word)
+void* genAsm::varInScope(const std::string *varName, int scope)
+{
+    for(auto itr = vars.find(*varName); itr != vars.end(); ++itr){
+        if(itr->first != *varName){
+            break;
+        }
+
+        if(itr->second.scope == scope){
+            return &(itr->second);
+        }
+    }
+    return nullptr;
+}
+
+void *genAsm::varAccessible(const std::string *varName, int scope)
+{
+    var* v = nullptr;
+    for(auto itr = vars.find(*varName); itr != vars.end(); ++itr){
+        if(itr->first != *varName){
+            break;
+        }
+
+        if(!v || (v && v->scope < itr->second.scope && itr->second.scope <= scope)){
+            v = &(itr->second);
+        }
+    }
+    return v;
+}
+
+void genAsm::push(const char *reg, int size, const char *word)
 {
     outAsm << "mov " << word << " [rsp + " << stackLoc << "], " << reg << "\n\t";
     stackLoc += size;
@@ -257,7 +301,9 @@ inline void genAsm::genExit()
 
 inline void genAsm::genInt()
 {
-    if(prog->sts.at(index).vals.size() > 1 && vars.contains(prog->sts.at(index).vals.at(0).value)){
+    if(prog->sts.at(index).vals.size() > 1 &&
+        varInScope(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size()))
+    {
         std::cerr << "Error, variable '" << prog->sts.at(index).vals.at(0).value << "' has already been declared." << std::endl;
         exit(1);
     }
@@ -267,8 +313,9 @@ inline void genAsm::genInt()
         prog->sts.at(index).vals.at(1).type == tokenType::equal)
     {
 
-        vars[prog->sts.at(index).vals.at(0).value].stackLoc = stackLoc;
-        vars[prog->sts.at(index).vals.at(0).value].size = 4;
+        vars.insert({prog->sts.at(index).vals.at(0).value,
+            var{.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size()}});
+
         genExpr(2);
         push("edi", SIZE_INT, "DWORD");
 
@@ -282,63 +329,82 @@ inline void genAsm::genInt()
 
 inline void genAsm::genUpdateIdent()
 {
-    if(!vars.contains(prog->sts.at(index).key.value)){
+    var* v = (var*)varAccessible(&(prog->sts.at(index).key.value), scopeStackLoc.size());
+    if(!v){
         std::cerr << "Error, '" << prog->sts.at(index).key.value << "' is not declared." << std::endl;
         exit(1);
     }
 
     genExpr(1);
+
             // the operator, = += -= *= /= 
     switch (prog->sts.at(index).vals.at(0).type)
     {
     case tokenType::equal:
-        outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " <<
-            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
-            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
+        outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
+            (int)(v->stackLoc) << "], " <<
+            selectReg("rdi", v->size) << "\n\t";
         break;
 
     case tokenType::addEq:
-        outAsm << "add " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " <<
-            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
-            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
+        outAsm << "add " << selectWord(v->size) << " [rsp + " <<
+            (int)(v->stackLoc) << "], " <<
+            selectReg("rdi", v->size) << "\n\t";
         break;
     
     case tokenType::subEq:
-        outAsm << "sub " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " <<
-            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
-            selectReg("rdi", vars[prog->sts.at(index).key.value].size) << "\n\t";
+        outAsm << "sub " << selectWord(v->size) << " [rsp + " <<
+            (int)(v->stackLoc) << "], " <<
+            selectReg("rdi", v->size) << "\n\t";
         break;
     
     case tokenType::mulEq:
         outAsm << "mov rax, rdi\n\t";
 
-        outAsm << "mul " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " <<
-            (int)(vars[prog->sts.at(index).key.value].stackLoc) << "]\n\t";
+        outAsm << "mul " << selectWord(v->size) << " [rsp + " <<
+            (int)(v->stackLoc) << "]\n\t";
 
-        outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " << 
-            selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
+        outAsm << "mov " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "], " << 
+            selectReg("rax", v->size) << "\n\t";
         break;
 
     case tokenType::divEq:
         outAsm << "mov rdx, 0\n\t";
 
-        outAsm << "mov " << selectReg("rax", vars[prog->sts.at(index).key.value].size) <<
-            ", " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc)
-            << "]\n\t";
+        outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "]\n\t";
 
         outAsm << "div rdi\n\t";
-        outAsm << "mov " << selectWord(vars[prog->sts.at(index).key.value].size) <<
-            " [rsp + " << (int)(vars[prog->sts.at(index).key.value].stackLoc) << "], " <<
-            selectReg("rax", vars[prog->sts.at(index).key.value].size) << "\n\t";
+        
+        outAsm << "mov " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "], " <<
+            selectReg("rax", v->size) << "\n\t";
         break;
 
     default:
         break;
+    }
+}
+
+inline void genAsm::genCurly()
+{
+    if(prog->sts.at(index).key.type == tokenType::curlyOpen){
+
+        scopeStackLoc.push_back(stackLoc);
+
+    }else if(prog->sts.at(index).key.type == tokenType::curlyClose){
+
+        stackLoc = scopeStackLoc.at(scopeStackLoc.size() - 1);
+        scopeStackLoc.pop_back();
+
+        for(std::map<std::string, var>::iterator itr = vars.begin(); itr != vars.end();){
+            if(itr->second.scope > scopeStackLoc.size()){
+                vars.erase(itr++);
+            }else{
+                ++itr;
+            }
+        }
+
     }
 }

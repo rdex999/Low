@@ -1,6 +1,7 @@
 int x = 10;
-x = 2*30/3;
-
-int aa = 42412385;
-
-exit x;
+{
+    int aa = 2 * (6 - 1*2);
+    exit aa;
+}
+int z = 32;
+exit z;

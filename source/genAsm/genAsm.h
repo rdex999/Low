@@ -1,7 +1,7 @@
 #pragma once
 #include <sstream>
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include "../node/node.h"
 
 class genAsm
@@ -17,10 +17,20 @@ class genAsm
         {
             size_t stackLoc;
             int size; // in bytes (int = 4, char = 1..)
+            int scope;
         };
-        
 
-        std::unordered_map<std::string, var> vars;
+        std::vector<int> scopeStackLoc;
+
+        std::map<std::string, var> vars;
+
+        // @returns {void*} a var* to the variable in scope
+        //(void* because the compiler doesnt like a normal var*)
+        void* varInScope(const std::string* varName, int scope);
+        
+        // @returns{void*} a var* to the variable in the most significant scope
+        // or nullptr if there is no such variable
+        void* varAccessible(const std::string* varName, int scope);
 
         const node::program* prog;
 
@@ -48,4 +58,5 @@ class genAsm
         inline void genExit();
         inline void genInt();
         inline void genUpdateIdent();
+        inline void genCurly();
 };

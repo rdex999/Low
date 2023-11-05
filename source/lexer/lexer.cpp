@@ -103,6 +103,14 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::parenClose});
             }
 
+            else if(buffer == "{"){
+                tokens.push_back(token{.type = tokenType::curlyOpen});
+            }
+
+            else if(buffer == "}"){
+                tokens.push_back(token{.type = tokenType::curlyClose});
+            }
+
             else{
                 std::cerr << "Error, not a valid operator '" << buffer << "'." << std::endl;
                 exit(1);

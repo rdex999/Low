@@ -20,6 +20,8 @@ enum class tokenType
     div, // /
     parenOpen, // (
     parenClose, // )
+    curlyOpen, // {
+    curlyClose, // }
 };
 
 typedef struct token
