@@ -9,7 +9,7 @@ genAsm::genAsm(const node::program* prog)
 
     for(index = 0; index < prog->sts.size(); index++)
     {
-        switch (prog->sts.at(index).key.type)
+        switch (prog->sts.at(index).vals.at(0).type)
         {
         case tokenType::_exit:
             genExit();
@@ -311,10 +311,10 @@ std::string genAsm::selectWord(int size)
 
 inline void genAsm::genExit()
 {
-    if(prog->sts.at(index).vals.at(0).type == tokenType::intLit && prog->sts.at(index).vals.size() == 1){
-        outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(0).value << "\n\tsyscall\n\t";
+    if(prog->sts.at(index).vals.at(1).type == tokenType::intLit && prog->sts.at(index).vals.size() == 2){
+        outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(1).value << "\n\tsyscall\n\t";
     }else{
-        genExpr();
+        genExpr(1);
         outAsm << "mov rax, 60\n\t";
         outAsm << "syscall\n\t";
     }
@@ -322,22 +322,22 @@ inline void genAsm::genExit()
 
 inline void genAsm::genInt()
 {
-    if(prog->sts.at(index).vals.size() > 1 &&
-        varInScope(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size()))
+    if(prog->sts.at(index).vals.size() > 2 &&
+        varInScope(&(prog->sts.at(index).vals.at(1).value), scopeStackLoc.size()))
     {
-        std::cerr << "Error, variable '" << prog->sts.at(index).vals.at(0).value << "' has already been declared." << std::endl;
+        std::cerr << "Error, variable '" << prog->sts.at(index).vals.at(1).value << "' has already been declared." << std::endl;
         exit(1);
     }
 
-    if(2 < prog->sts.at(index).vals.size() &&
-        prog->sts.at(index).vals.at(0).type == tokenType::ident &&
-        prog->sts.at(index).vals.at(1).type == tokenType::equal)
+    if(3 < prog->sts.at(index).vals.size() &&
+        prog->sts.at(index).vals.at(1).type == tokenType::ident &&
+        prog->sts.at(index).vals.at(2).type == tokenType::equal)
     {
 
-        vars.insert({prog->sts.at(index).vals.at(0).value,
+        vars.insert({prog->sts.at(index).vals.at(1).value,
             var{.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size()}});
 
-        genExpr(2);
+        genExpr(3);
         push("edi", SIZE_INT, "DWORD");
 
     }else{
@@ -350,12 +350,12 @@ inline void genAsm::genInt()
 
 inline void genAsm::genUpdateIdent()
 {
-    var* v = (var*)varAccessible(&(prog->sts.at(index).key.value), scopeStackLoc.size());
+    var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
 
-    genExpr(1);
+    genExpr(2);
 
             // the operator, = += -= *= /= 
-    switch (prog->sts.at(index).vals.at(0).type)
+    switch (prog->sts.at(index).vals.at(1).type)
     {
     case tokenType::equal:
         outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
@@ -411,11 +411,11 @@ inline void genAsm::genUpdateIdent()
 
 inline void genAsm::genCurly()
 {
-    if(prog->sts.at(index).key.type == tokenType::curlyOpen){
+    if(prog->sts.at(index).vals.at(0).type == tokenType::curlyOpen){
 
         scopeStackLoc.push_back(stackLoc);
 
-    }else if(prog->sts.at(index).key.type == tokenType::curlyClose){
+    }else if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
 
         stackLoc = scopeStackLoc.at(scopeStackLoc.size() - 1);
         scopeStackLoc.pop_back();
@@ -433,50 +433,71 @@ inline void genAsm::genCurly()
 
 inline void genAsm::genPreIncDec(int idx, const char* reg)
 {
-    var* v = nullptr;
-    if(idx == 0){
-        v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
-        
-        if(prog->sts.at(index).key.type == tokenType::pp){
-            outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }else if(prog->sts.at(index).key.type == tokenType::mm){
-            outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }
-    }else{
-        v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx + 1).value), scopeStackLoc.size());
-
-        if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-            outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-            outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }
-    }
-
-    if(reg){
-        outAsm << "mov " << selectReg(reg, v->size) << ", " <<
-            selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    }
-}
-
-inline void genAsm::genPostIncDec(int idx, const char* reg)
-{
-    var* v = nullptr;
-    if(idx == 0){
-        v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
-    }else{
-        v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx).value, scopeStackLoc.size());
-        ++idx;
+    var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx + 1).value, scopeStackLoc.size());
+    if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
 
     if(reg){
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
-
-    if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     
-    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+    //if(idx == 0){
+    //    v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
+    //    
+    //    if(prog->sts.at(index).key.type == tokenType::pp){
+    //        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //    }else if(prog->sts.at(index).key.type == tokenType::mm){
+    //        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //    }
+    //}else{
+    //    v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx + 1).value), scopeStackLoc.size());
+//
+    //    if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+    //        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+    //        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //    }
+    //}
+//
+    //if(reg){
+    //    outAsm << "mov " << selectReg(reg, v->size) << ", " <<
+    //        selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //}
+}
+
+inline void genAsm::genPostIncDec(int idx, const char* reg)
+{
+    var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx).value, scopeStackLoc.size());
+
+    if(reg){
+        outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }
+
+    if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::pp){
+        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }else if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::mm){
         outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
+    
+    //if(idx == 0){
+    //    v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
+    //}else{
+    //    v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx).value, scopeStackLoc.size());
+    //    ++idx;
+    //}
+//
+    //if(reg){
+    //    outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //}
+//
+    //if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+    //    outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //
+    //}else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+    //    outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    //}
 
 }

@@ -12,7 +12,9 @@ parse::parse(const std::vector<token>* tokens)
 
 inline void parse::parseSt(const token* t)
 {
-    node::st st = node::st{.key = *t};
+    node::st st;
+    st.vals.push_back(*t);
+
     if(t->type == tokenType::curlyOpen ||
         t->type == tokenType::curlyClose)
     {

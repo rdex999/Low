@@ -7,11 +7,8 @@ namespace node
     // statement
     struct st
     {
-        // the statement (int, exit..)
-        const token key;
-
         // the values after the statement.
-        // for example if there is 'exit' then 'after' is the number. (exit 5;)
+        // index 0 is the key 
         std::vector<token> vals; 
     };
     
