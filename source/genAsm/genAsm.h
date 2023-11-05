@@ -22,7 +22,7 @@ class genAsm
 
         std::vector<int> scopeStackLoc;
 
-        std::map<std::string, var> vars;
+        std::multimap<std::string, var> vars;
 
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
@@ -59,4 +59,6 @@ class genAsm
         inline void genInt();
         inline void genUpdateIdent();
         inline void genCurly();
+        inline void genPreIncDec(const char* reg = nullptr);
+        inline void genPostIncDec(const char* reg = nullptr);
 };

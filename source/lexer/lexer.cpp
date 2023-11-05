@@ -75,6 +75,14 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::divEq});
             }
 
+            else if(buffer == "++"){
+                tokens.push_back(token{.type = tokenType::pp});
+            }
+
+            else if(buffer == "--"){
+                tokens.push_back(token{.type = tokenType::mm});
+            }
+
             else if(buffer == "="){
                 tokens.push_back(token{.type = tokenType::equal});
             }

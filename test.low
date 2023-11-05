@@ -1,7 +1,5 @@
 int x = 10;
-{
-    int aa = 2 * (6 - 1*2);
-    exit aa;
-}
-int z = 32;
-exit z;
+
+x++;
+
+exit x;

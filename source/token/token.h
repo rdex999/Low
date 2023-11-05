@@ -8,12 +8,14 @@ enum class tokenType
     intLit,
     semicolon,
     ident,
+    _int,
     equal, // =
     addEq, // +=
     subEq, // -=
     mulEq, // *=
     divEq, // /=
-    _int,
+    pp, // ++
+    mm, // --
     add, // +
     sub, // -
     mul, // *

@@ -28,6 +28,11 @@ genAsm::genAsm(const node::program* prog)
             genCurly();
             break;
 
+        case tokenType::pp:
+        case tokenType::mm:
+            genPreIncDec();
+            break;
+
         default:
             break;
         }
@@ -157,12 +162,6 @@ int genAsm::genSingle(int idx, const char* reg)
     case tokenType::ident:{
 
         var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx).value), scopeStackLoc.size());
-        if(!v){
-            std::cerr << "Error, identifier '" << prog->sts.at(index).vals.at(idx).value << "' is undeclared or not in this scope."
-                << std::endl;
-
-            exit(1);
-        }
 
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
             " [rsp + " << (int)(v->stackLoc) << "]\n\t";
@@ -219,9 +218,14 @@ void *genAsm::varAccessible(const std::string *varName, int scope)
             break;
         }
 
-        if(!v || (v && v->scope < itr->second.scope && itr->second.scope <= scope)){
+        if(!v || (v && v->scope < itr->second.scope)){
             v = &(itr->second);
         }
+    }
+
+    if(!v){
+        std::cerr << "Error, identifier '" << *varName << "' is undeclared or not declared in this scope." << std::endl;
+        exit(1);
     }
     return v;
 }
@@ -330,10 +334,6 @@ inline void genAsm::genInt()
 inline void genAsm::genUpdateIdent()
 {
     var* v = (var*)varAccessible(&(prog->sts.at(index).key.value), scopeStackLoc.size());
-    if(!v){
-        std::cerr << "Error, '" << prog->sts.at(index).key.value << "' is not declared." << std::endl;
-        exit(1);
-    }
 
     genExpr(1);
 
@@ -344,6 +344,11 @@ inline void genAsm::genUpdateIdent()
         outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
             (int)(v->stackLoc) << "], " <<
             selectReg("rdi", v->size) << "\n\t";
+        break;
+
+    case tokenType::pp:
+    case tokenType::mm:
+        genPostIncDec();
         break;
 
     case tokenType::addEq:
@@ -407,4 +412,37 @@ inline void genAsm::genCurly()
         }
 
     }
+}
+
+inline void genAsm::genPreIncDec(const char* reg)
+{
+    var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
+    if(prog->sts.at(index).key.type == tokenType::pp){
+        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+
+    }else if(prog->sts.at(index).key.type == tokenType::mm){
+        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }
+
+    if(reg){
+        outAsm << "mov " << selectReg(reg, v->size) << ", " <<
+            selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }
+}
+
+inline void genAsm::genPostIncDec(const char* reg)
+{
+    var* v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
+
+    if(reg){
+        outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }
+
+    if(prog->sts.at(index).vals.at(0).type == tokenType::pp){
+        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    
+    }else if(prog->sts.at(index).vals.at(0).type == tokenType::mm){
+        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+    }
+
 }
