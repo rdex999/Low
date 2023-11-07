@@ -326,12 +326,21 @@ std::string genAsm::selectWord(int size)
     }
 }
 
-std::string genAsm::createLablel(bool peek)
+std::string genAsm::createLablel(bool create)
 {
-    if(peek){
-        return std::format(".L{}", lableCount);
+    if(create){
+        if(lableNums.size() == 0){
+            lableNums.push_back(0);
+            return std::string(".L0");
+        }else{
+            lableNums.push_back(lableNums.at(lableNums.size() - 1) + 1);
+            return std::format(".L{}", lableNums.at(lableNums.size() - 1));
+        } 
     }
-    return std::format("\r.L{}:\n\t", lableCount++);
+
+    int lableNum = lableNums.at(lableNums.size() - 1);
+    lableNums.pop_back();
+    return std::format("\r.L{}:\n\t", lableNum);
 }
 
 int genAsm::genIfExpr(int from, const std::string* lable)
@@ -339,6 +348,11 @@ int genAsm::genIfExpr(int from, const std::string* lable)
     for(; from<prog->sts.at(index).vals.size(); ++from){
         switch (prog->sts.at(index).vals.at(from).type)
         {
+        case tokenType::curlyOpen:
+            genCurly(from, false);
+            return -1; 
+            break;
+
         case tokenType::bEqual:
             push("rdi", 8);
             from = genExpr(from+1) - 1;
@@ -346,13 +360,52 @@ int genAsm::genIfExpr(int from, const std::string* lable)
             outAsm << "cmp rdi, rbx\n\tjne " << *lable << "\n\t";
             break;
 
-        case tokenType::curlyOpen:
-            genCurly(from);
-            return -1; 
+        case tokenType::bNotEq:
+            push("rdi", 8);
+            from = genExpr(from + 1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rdi, rbx\n\tje " << *lable << "\n\t";
             break;
         
+        case tokenType::g:
+            push("rdi", 8);
+            from = genExpr(from + 1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rbx, rdi\n\tjle " << *lable << "\n\t";
+            break;
+        
+        case tokenType::gEq:
+            push("rdi", 8);
+            from = genExpr(from + 1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rbx, rdi\n\tjl " << *lable << "\n\t";
+            break;
+        
+        case tokenType::l:
+            push("rdi", 8);
+            from = genExpr(from + 1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rbx, rdi\n\tjge " << *lable << "\n\t";
+            break;
+        
+        case tokenType::lEq:
+            push("rdi", 8);
+            from = genExpr(from + 1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rbx, rdi\n\tjg " << *lable << "\n\t";
+            break;
+
         default:
             from = genExpr(from) - 1;
+
+            // i might change this way of checking if this is a 'self check' (if x {...})
+            if(prog->sts.at(index).vals.at(from+1).type == tokenType::_and ||
+                prog->sts.at(index).vals.at(from+1).type == tokenType::_or ||
+                prog->sts.at(index).vals.at(from+1).type == tokenType::curlyOpen ||
+                prog->sts.at(index).vals.at(from+1).type == tokenType::parenClose)
+            {
+                outAsm << "test rdi, rdi\n\tjz " << *lable << "\n\t";
+            }
             break;
         }
     }
@@ -459,11 +512,14 @@ inline void genAsm::genUpdateIdent()
     }
 }
 
-inline void genAsm::genCurly(int idx)
+inline void genAsm::genCurly(int idx, bool crtLable)
 {
     if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyOpen){
 
         scopeStackLoc.push_back(stackLoc);
+        if(crtLable){
+            createLablel(true);
+        }
 
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyClose){
 

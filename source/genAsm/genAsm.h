@@ -22,6 +22,7 @@ class genAsm
         };
 
         std::vector<int> scopeStackLoc;
+        std::vector<int> lableNums;
 
         std::multimap<std::string, var> vars;
 
@@ -29,7 +30,6 @@ class genAsm
 
         size_t index = 0;
         size_t stackLoc = 0;
-        size_t lableCount = 0;
 
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
@@ -57,14 +57,16 @@ class genAsm
         // @param {const char*} reg
         int genSingle(int idx, const char* reg);
 
-        std::string createLablel(bool peek = false);
+        std::string createLablel(bool create = false);
         
         int genIfExpr(int from, const std::string* lable);
 
         inline void genExit();
         inline void genInt();
-        inline void genUpdateIdent();
-        inline void genCurly(int idx = 0);
+        inline void genUpdateIdent();   
+
+                                        /* createLable*/
+        inline void genCurly(int idx = 0, bool crtLable = true);
         inline void genPreIncDec(int idx, const char* reg = nullptr);
         inline void genPostIncDec(int idx, const char* reg = nullptr);
         inline void genIf();
