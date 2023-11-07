@@ -33,6 +33,10 @@ genAsm::genAsm(const node::program* prog)
             genPreIncDec(0);
             break;
 
+        case tokenType::_if:
+            genIf();
+            break;
+
         default:
             break;
         }
@@ -105,6 +109,19 @@ int genAsm::genExpr(int valsIdx)
             outAsm << "mov rdi, rax\n\t";
             break;
         }
+
+        case tokenType::bEqual:
+        case tokenType::bNot:
+        case tokenType::bNotEq:
+        case tokenType::g:
+        case tokenType::gEq:
+        case tokenType::l:
+        case tokenType::lEq:
+        case tokenType::_and:
+        case tokenType::_or:
+        case tokenType::curlyOpen:
+            return i;
+
 
         default:
             i = genSingle(i, "rdi");
@@ -309,6 +326,39 @@ std::string genAsm::selectWord(int size)
     }
 }
 
+std::string genAsm::createLablel(bool peek)
+{
+    if(peek){
+        return std::format(".L{}", lableCount);
+    }
+    return std::format("\r.L{}:\n\t", lableCount++);
+}
+
+int genAsm::genIfExpr(int from, const std::string* lable)
+{
+    for(; from<prog->sts.at(index).vals.size(); ++from){
+        switch (prog->sts.at(index).vals.at(from).type)
+        {
+        case tokenType::bEqual:
+            push("rdi", 8);
+            from = genExpr(from+1) - 1;
+            pop("rbx", 8);
+            outAsm << "cmp rdi, rbx\n\tjne " << *lable << "\n\t";
+            break;
+
+        case tokenType::curlyOpen:
+            genCurly(from);
+            return -1; 
+            break;
+        
+        default:
+            from = genExpr(from) - 1;
+            break;
+        }
+    }
+    return from;
+}
+
 inline void genAsm::genExit()
 {
     if(prog->sts.at(index).vals.at(1).type == tokenType::intLit && prog->sts.at(index).vals.size() == 2){
@@ -409,16 +459,18 @@ inline void genAsm::genUpdateIdent()
     }
 }
 
-inline void genAsm::genCurly()
+inline void genAsm::genCurly(int idx)
 {
-    if(prog->sts.at(index).vals.at(0).type == tokenType::curlyOpen){
+    if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyOpen){
 
         scopeStackLoc.push_back(stackLoc);
 
-    }else if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
+    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyClose){
 
         stackLoc = scopeStackLoc.at(scopeStackLoc.size() - 1);
         scopeStackLoc.pop_back();
+
+        outAsm << createLablel();
 
         for(std::map<std::string, var>::iterator itr = vars.begin(); itr != vars.end();){
             if(itr->second.scope > scopeStackLoc.size()){
@@ -443,29 +495,6 @@ inline void genAsm::genPreIncDec(int idx, const char* reg)
     if(reg){
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
-    
-    //if(idx == 0){
-    //    v = (var*)varAccessible(&(prog->sts.at(index).vals.at(0).value), scopeStackLoc.size());
-    //    
-    //    if(prog->sts.at(index).key.type == tokenType::pp){
-    //        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //    }else if(prog->sts.at(index).key.type == tokenType::mm){
-    //        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //    }
-    //}else{
-    //    v = (var*)varAccessible(&(prog->sts.at(index).vals.at(idx + 1).value), scopeStackLoc.size());
-//
-    //    if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-    //        outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-    //        outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //    }
-    //}
-//
-    //if(reg){
-    //    outAsm << "mov " << selectReg(reg, v->size) << ", " <<
-    //        selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //}
 }
 
 inline void genAsm::genPostIncDec(int idx, const char* reg)
@@ -481,23 +510,11 @@ inline void genAsm::genPostIncDec(int idx, const char* reg)
     }else if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::mm){
         outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
     }
-    
-    //if(idx == 0){
-    //    v = (var*)varAccessible(&prog->sts.at(index).key.value, scopeStackLoc.size());
-    //}else{
-    //    v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx).value, scopeStackLoc.size());
-    //    ++idx;
-    //}
-//
-    //if(reg){
-    //    outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //}
-//
-    //if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-    //    outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //
-    //}else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-    //    outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-    //}
+}
 
+inline void genAsm::genIf()
+{
+    std::string lable = createLablel(true);
+
+    genIfExpr(1, &lable);
 }

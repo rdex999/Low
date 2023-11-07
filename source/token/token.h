@@ -24,6 +24,16 @@ enum class tokenType
     parenClose, // )
     curlyOpen, // {
     curlyClose, // }
+    _if,
+    _or,
+    _and,
+    bEqual,
+    bNotEq, // not equal, !=
+    bNot, // not, !
+    g, // greater, >
+    gEq, // greater or equal to, >=
+    l, // less, <
+    lEq, // less or equal to <=
 };
 
 typedef struct token

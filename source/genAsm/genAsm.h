@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <map>
+#include <format>
 #include "../node/node.h"
 
 class genAsm
@@ -24,6 +25,12 @@ class genAsm
 
         std::multimap<std::string, var> vars;
 
+        const node::program* prog;
+
+        size_t index = 0;
+        size_t stackLoc = 0;
+        size_t lableCount = 0;
+
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
         void* varInScope(const std::string* varName, int scope);
@@ -31,11 +38,6 @@ class genAsm
         // @returns{void*} a var* to the variable in the most significant scope
         // or nullptr if there is no such variable
         void* varAccessible(const std::string* varName, int scope);
-
-        const node::program* prog;
-
-        size_t index = 0;
-        size_t stackLoc = 0;
         
         void push(const char* reg, int size, const char* word = "");
         void pop(const char* reg, int size, const char* word = "");
@@ -55,10 +57,15 @@ class genAsm
         // @param {const char*} reg
         int genSingle(int idx, const char* reg);
 
+        std::string createLablel(bool peek = false);
+        
+        int genIfExpr(int from, const std::string* lable);
+
         inline void genExit();
         inline void genInt();
         inline void genUpdateIdent();
-        inline void genCurly();
+        inline void genCurly(int idx = 0);
         inline void genPreIncDec(int idx, const char* reg = nullptr);
         inline void genPostIncDec(int idx, const char* reg = nullptr);
+        inline void genIf();
 };

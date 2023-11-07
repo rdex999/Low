@@ -26,6 +26,18 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_int});
             }
 
+            else if(buffer == "if"){
+                tokens.push_back(token{.type = tokenType::_if});
+            }
+
+            else if(buffer == "and"){
+                tokens.push_back(token{.type = tokenType::_and});
+            }
+
+            else if(buffer == "or"){
+                tokens.push_back(token{.type = tokenType::_or});
+            }
+
             else{
                 tokens.push_back(token{.type = tokenType::ident, .value = buffer});
             }
@@ -51,7 +63,7 @@ std::vector<token> lexer::createTokens()
             continue;
         }
         else if(!std::isalnum(src[index])){
-            while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';'){
+            while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';' && index < src.size()){
                 buffer += take();
 
                 if(src[index] == '(' || src[index] == ')'){
@@ -117,6 +129,42 @@ std::vector<token> lexer::createTokens()
 
             else if(buffer == "}"){
                 tokens.push_back(token{.type = tokenType::curlyClose});
+            }
+
+            else if(buffer == "=="){
+                tokens.push_back(token{.type = tokenType::bEqual});
+            }
+
+            else if(buffer == "!="){
+                tokens.push_back(token{.type = tokenType::bNotEq});
+            }
+
+            else if(buffer == "&&"){
+                tokens.push_back(token{.type = tokenType::_and});
+            }
+
+            else if(buffer == "||"){
+                tokens.push_back(token{.type = tokenType::_or});
+            }
+
+            else if(buffer == ">"){
+                tokens.push_back(token{.type = tokenType::g});
+            }
+
+            else if(buffer == ">="){
+                tokens.push_back(token{.type = tokenType::gEq});
+            }
+
+            else if(buffer == "<"){
+                tokens.push_back(token{.type = tokenType::l});
+            }
+
+            else if(buffer == "<="){
+                tokens.push_back(token{.type = tokenType::lEq});
+            }
+
+            else if(buffer == "!"){
+                tokens.push_back(token{.type = tokenType::bNot});
             }
 
             else{
