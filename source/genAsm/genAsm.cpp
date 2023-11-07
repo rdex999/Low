@@ -329,18 +329,10 @@ std::string genAsm::selectWord(int size)
 std::string genAsm::createLablel(bool create)
 {
     if(create){
-        if(lableNums.size() == 0){
-            lableNums.push_back(0);
-            return std::string(".L0");
-        }else{
-            lableNums.push_back(lableNums.at(lableNums.size() - 1) + 1);
-            return std::format(".L{}", lableNums.at(lableNums.size() - 1));
-        } 
+        return std::format(".L{}", ++lableNum);
     }
 
-    int lableNum = lableNums.at(lableNums.size() - 1);
-    lableNums.pop_back();
-    return std::format("\r.L{}:\n\t", lableNum);
+    return std::format("\r.L{}:\n\t", lableNum--);
 }
 
 int genAsm::genIfExpr(int from, const std::string* lable)

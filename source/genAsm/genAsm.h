@@ -22,7 +22,6 @@ class genAsm
         };
 
         std::vector<int> scopeStackLoc;
-        std::vector<int> lableNums;
 
         std::multimap<std::string, var> vars;
 
@@ -30,6 +29,7 @@ class genAsm
 
         size_t index = 0;
         size_t stackLoc = 0;
+        size_t lableNum = 0;
 
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
