@@ -339,8 +339,8 @@ int genAsm::genIfExpr(int from, int lable)
         case tokenType::curlyOpen:
             outAsm << "\r.L" << lable << ":\n\t";
             genCurly(from);
+            lableNum += 2; 
             for(++index; index < prog->sts.size(); ++index){
-                lableNum += 2; 
                 genStmt();
                 if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
                     outAsm << "\r.L" << lable + 1 << ":\n\t";
