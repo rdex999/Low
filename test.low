@@ -1,9 +1,16 @@
-int x = 60;
-if x/3 == 20{
-    int y = 30; 
-    if y/3 >= 10{
-        exit 1;
+int x = 10;
+if 2 > 0{
+    ++x;
+    if x > 10{
+        ++x;
     }
-    exit y;
 }
-exit 2;
+
+if x < 20{
+    ++x;
+    if x <= 13{
+        ++x;
+    }
+}
+
+exit x;

@@ -9,40 +9,45 @@ genAsm::genAsm(const node::program* prog)
 
     for(index = 0; index < prog->sts.size(); index++)
     {
-        switch (prog->sts.at(index).vals.at(0).type)
-        {
-        case tokenType::_exit:
-            genExit();
-            break;
-
-        case tokenType::_int:
-            genInt();
-            break;
-
-        case tokenType::ident:
-            genUpdateIdent();
-            break;
-
-        case tokenType::curlyOpen:
-        case tokenType::curlyClose:
-            genCurly();
-            break;
-
-        case tokenType::pp:
-        case tokenType::mm:
-            genPreIncDec(0);
-            break;
-
-        case tokenType::_if:
-            genIf();
-            break;
-
-        default:
-            break;
-        }
+        genStmt();
     }
 
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
+}
+
+void genAsm::genStmt()
+{
+    switch (prog->sts.at(index).vals.at(0).type)
+    {
+    case tokenType::_exit:
+        genExit();
+        break;
+
+    case tokenType::_int:
+        genInt();
+        break;
+
+    case tokenType::ident:
+        genUpdateIdent();
+        break;
+
+    case tokenType::curlyOpen:
+    case tokenType::curlyClose:
+        genCurly();
+        break;
+
+    case tokenType::pp:
+    case tokenType::mm:
+        genPreIncDec(0);
+        break;
+
+    case tokenType::_if:
+        genIf();
+        break;
+
+    default:
+        break;
+    }
 }
 
 int genAsm::genExpr(int valsIdx)
@@ -326,22 +331,22 @@ std::string genAsm::selectWord(int size)
     }
 }
 
-std::string genAsm::createLablel(bool create)
-{
-    if(create){
-        return std::format(".L{}", ++lableNum);
-    }
-
-    return std::format("\r.L{}:\n\t", lableNum--);
-}
-
-int genAsm::genIfExpr(int from, const std::string* lable)
+int genAsm::genIfExpr(int from, int lable)
 {
     for(; from<prog->sts.at(index).vals.size(); ++from){
         switch (prog->sts.at(index).vals.at(from).type)
         {
         case tokenType::curlyOpen:
-            genCurly(from, false);
+            outAsm << "\r.L" << lable << ":\n\t";
+            genCurly(from);
+            for(++index; index < prog->sts.size(); ++index){
+                lableNum += 2; 
+                genStmt();
+                if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
+                    outAsm << "\r.L" << lable + 1 << ":\n\t";
+                    break;
+                }
+            }
             return -1; 
             break;
 
@@ -349,42 +354,42 @@ int genAsm::genIfExpr(int from, const std::string* lable)
             push("rdi", 8);
             from = genExpr(from+1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tjne " << *lable << "\n\t";
+            outAsm << "cmp rdi, rbx\n\tjne .L" << lable + 1 << "\n\t";
             break;
 
         case tokenType::bNotEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tje " << *lable << "\n\t";
+            outAsm << "cmp rdi, rbx\n\tje .L" << lable + 1 << "\n\t";
             break;
         
         case tokenType::g:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjle " << *lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjle .L" << lable + 1 << "\n\t";
             break;
         
         case tokenType::gEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjl " << *lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjl .L" << lable + 1 << "\n\t";
             break;
         
         case tokenType::l:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjge " << *lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjge .L" << lable + 1 << "\n\t";
             break;
         
         case tokenType::lEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjg " << *lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjg .L" << lable + 1 << "\n\t";
             break;
 
         default:
@@ -396,7 +401,7 @@ int genAsm::genIfExpr(int from, const std::string* lable)
                 prog->sts.at(index).vals.at(from+1).type == tokenType::curlyOpen ||
                 prog->sts.at(index).vals.at(from+1).type == tokenType::parenClose)
             {
-                outAsm << "test rdi, rdi\n\tjz " << *lable << "\n\t";
+                outAsm << "test rdi, rdi\n\tjz .L" << lable + 1 << "\n\t";
             }
             break;
         }
@@ -504,21 +509,17 @@ inline void genAsm::genUpdateIdent()
     }
 }
 
-inline void genAsm::genCurly(int idx, bool crtLable)
+inline void genAsm::genCurly(int idx)
 {
     if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyOpen){
 
         scopeStackLoc.push_back(stackLoc);
-        if(crtLable){
-            createLablel(true);
-        }
 
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyClose){
 
         stackLoc = scopeStackLoc.at(scopeStackLoc.size() - 1);
         scopeStackLoc.pop_back();
 
-        outAsm << createLablel();
 
         for(std::map<std::string, var>::iterator itr = vars.begin(); itr != vars.end();){
             if(itr->second.scope > scopeStackLoc.size()){
@@ -562,7 +563,5 @@ inline void genAsm::genPostIncDec(int idx, const char* reg)
 
 inline void genAsm::genIf()
 {
-    std::string lable = createLablel(true);
-
-    genIfExpr(1, &lable);
+    genIfExpr(1, lableNum);
 }

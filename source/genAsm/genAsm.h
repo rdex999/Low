@@ -45,6 +45,8 @@ class genAsm
         std::string selectReg(const char* reg, int size);
         std::string selectWord(int size);
 
+        void genStmt();
+
         // the final value is in RDX
         // @returns {int} the index of i. used when there are parenthesis
         int genExpr(int valsIdx = 0);
@@ -57,16 +59,12 @@ class genAsm
         // @param {const char*} reg
         int genSingle(int idx, const char* reg);
 
-        std::string createLablel(bool create = false);
-        
-        int genIfExpr(int from, const std::string* lable);
+        int genIfExpr(int from, int lable);
 
         inline void genExit();
         inline void genInt();
         inline void genUpdateIdent();   
-
-                                        /* createLable*/
-        inline void genCurly(int idx = 0, bool crtLable = true);
+        inline void genCurly(int idx = 0);
         inline void genPreIncDec(int idx, const char* reg = nullptr);
         inline void genPostIncDec(int idx, const char* reg = nullptr);
         inline void genIf();
