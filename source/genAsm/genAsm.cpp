@@ -344,10 +344,11 @@ int genAsm::genIfExpr(int from, int lable)
                 genStmt();
                 if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
                     outAsm << "\r.L" << lable + 1 << ":\n\t";
-                    break;
+                    return -1;
                 }
             }
-            return -1; 
+            std::cerr << "Error, expected '}'" << std::endl;
+            exit(1);
             break;
 
         case tokenType::bEqual:
