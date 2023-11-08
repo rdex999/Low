@@ -14,12 +14,14 @@ enum class tokenType
     subEq, // -=
     mulEq, // *=
     divEq, // /=
+    percentEq, // %=
     pp, // ++
     mm, // --
     add, // +
     sub, // -
     mul, // *
     div, // /
+    percent, // %
     parenOpen, // (
     parenClose, // )
     curlyOpen, // {

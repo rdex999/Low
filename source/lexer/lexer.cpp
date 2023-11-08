@@ -95,6 +95,10 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::mm});
             }
 
+            else if(buffer == "%="){
+                tokens.push_back(token{.type = tokenType::percentEq});
+            }
+
             else if(buffer == "="){
                 tokens.push_back(token{.type = tokenType::equal});
             }
@@ -113,6 +117,10 @@ std::vector<token> lexer::createTokens()
 
             else if(buffer == "/"){
                 tokens.push_back(token{.type = tokenType::div});
+            }
+
+            else if(buffer == "%"){
+                tokens.push_back(token{.type = tokenType::percent});
             }
 
             else if(buffer == "("){

@@ -65,6 +65,18 @@ int genAsm::genExpr(int valsIdx)
             break;
         }
 
+        case tokenType::percent:{
+            if(i + 1 >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use modulo(%) operator without a value." << std::endl;
+                exit(1);
+            }
+
+            outAsm << "mov rax, rdi\n\t";
+            i = genMulDiv(i);
+            outAsm << "mov rdi, rax\n\t";
+            break;
+        }
+
         case tokenType::bEqual:
         case tokenType::bNot:
         case tokenType::bNotEq:
@@ -117,6 +129,23 @@ int genAsm::genMulDiv(int idx)
             outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
             return idx;
         } 
+    }
+    else if(prog->sts.at(index).vals.at(idx).type == tokenType::percent){
+        if(prog->sts.at(index).vals.at(idx+1).type == tokenType::parenOpen){
+            push("rax", 8);
+            idx = genExpr(idx + 2);
+            pop("rax", 8);
+            outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
+            outAsm << "mov rax, rdx\n\t";
+            return idx;
+        }else{
+            push("rax", 8);
+            idx = genSingle(idx + 1, "rbx");
+            pop("rax", 8);
+            outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
+            outAsm << "mov rax, rdx\n\t";
+            return idx;
+        }
     }
 
     return -1;

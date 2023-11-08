@@ -56,6 +56,19 @@ inline void genAsm::genUpdateIdent()
             selectReg("rax", v->size) << "\n\t";
         break;
 
+    case tokenType::percentEq:
+        outAsm << "mov rdx, 0\n\t";
+
+        outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+
+        outAsm << "div rdi\n\t";
+        
+        outAsm << "mov " << selectWord(v->size) <<
+            " [rsp + " << (int)(v->stackLoc) << "], " <<
+            selectReg("rdx", v->size) << "\n\t";
+        break;
+
     default:
         break;
     }
