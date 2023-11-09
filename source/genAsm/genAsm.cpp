@@ -40,6 +40,7 @@ void genAsm::genStmt()
         break;
 
     case tokenType::ident:
+    case tokenType::mul:
         genUpdateIdent();
         break;
 

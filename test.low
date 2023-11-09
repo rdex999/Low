@@ -1,3 +1,6 @@
-int x = 4 * (2+3);
-int ptr p = &x;
-exit *p;
+int x = 10;
+int ptr y = &x;
+
+*y--;
+
+exit x;
