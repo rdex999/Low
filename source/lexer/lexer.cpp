@@ -38,6 +38,14 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_or});
             }
 
+            else if(buffer == "ptr"){
+                tokens.push_back(token{.type = tokenType::ptr});
+            }
+
+            else if(buffer == "char"){
+                tokens.push_back(token{.type = tokenType::_char});
+            }
+
             else{
                 tokens.push_back(token{.type = tokenType::ident, .value = buffer});
             }
@@ -62,6 +70,42 @@ std::vector<token> lexer::createTokens()
             tokens.push_back(token{.type = tokenType::semicolon});
             continue;
         }
+
+        else if(src[index] == '\''){
+            if(src.size() > index + 2 && src[index + 2] == '\''){
+                buffer += take();
+                buffer += take();
+                buffer += take();
+                tokens.push_back(token{.type = tokenType::quote, .value = buffer});
+                buffer.clear();
+                continue;
+            }else{
+                std::cerr << "Error, cannot use single quote ('') on multible characters.\nSingle quotes are for one character."
+                    << std::endl;
+                
+                exit(1);
+            }
+        }
+
+        else if(src[index] == '"'){
+            while(index < src.size()){
+                buffer += take();
+                if(index < src.size()){
+                    if(src[index] == '"'){
+                        buffer += take();
+                        break; 
+                    }
+                }else{
+                    std::cerr << "Error, forgot a closing double qoute(\")?" << std::endl;
+                    exit(1);
+                }
+            }
+
+            tokens.push_back(token{.type = tokenType::dQoute, .value = buffer});
+            buffer.clear();
+            continue;
+        }
+
         else if(!std::isalnum(src[index])){
             while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';' && index < src.size()){
                 buffer += take();

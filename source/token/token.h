@@ -8,7 +8,7 @@ enum class tokenType
     intLit,
     semicolon,
     ident,
-    _int,
+    _int, // int data type
     equal, // =
     addEq, // +=
     subEq, // -=
@@ -29,13 +29,17 @@ enum class tokenType
     _if,
     _or,
     _and,
-    bEqual,
+    bEqual, // boolean equal, ==
     bNotEq, // not equal, !=
     bNot, // not, !
     g, // greater, >
     gEq, // greater or equal to, >=
     l, // less, <
     lEq, // less or equal to <=
+    quote, // ' '
+    dQoute, // " "
+    _char, // char data type
+    ptr, // ptr keyword, for pointers. (char ptr myString = "string";)
 };
 
 typedef struct token

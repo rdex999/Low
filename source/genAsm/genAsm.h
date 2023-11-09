@@ -19,6 +19,7 @@ class genAsm
             size_t stackLoc;
             int size; // in bytes (int = 4, char = 1..)
             int scope;
+            int ptrReadBytes = -1; // if -1 then not a pointer
         };
 
         std::vector<int> scopeStackLoc;
@@ -63,6 +64,7 @@ class genAsm
 
         inline void genExit();
         inline void genInt();
+        inline void genChar(int idx = 0);
         inline void genUpdateIdent();   
         inline void genCurly(int idx = 0);
         inline void genPreIncDec(int idx, const char* reg = nullptr);

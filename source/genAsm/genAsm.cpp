@@ -7,6 +7,7 @@
 #include "genIf/genIf.h"
 #include "int/int.h"
 #include "ident/ident.h"
+#include "char/char.h"
 
 genAsm::genAsm(const node::program* prog)
 {
@@ -32,6 +33,10 @@ void genAsm::genStmt()
 
     case tokenType::_int:
         genInt();
+        break;
+
+    case tokenType::_char:
+        genChar();
         break;
 
     case tokenType::ident:
@@ -79,6 +84,10 @@ int genAsm::genSingle(int idx, const char* reg)
     {
     case tokenType::intLit:
         outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
+        break;
+
+    case tokenType::quote:
+        outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
         break;
 
     case tokenType::ident:{
