@@ -24,7 +24,7 @@ inline void genAsm::genChar(int idx)
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
                         genExpr(i+2);
-                        push("dil", 1); // dil: low 8 bits of rdi
+                        push(selectReg("rdi", v.size).c_str(), v.size); // dil: low 8 bits of rdi
                     }else{
                         std::cerr << "Error, cannot use assignment operator(=) without a value." << std::endl;
                         exit(1);

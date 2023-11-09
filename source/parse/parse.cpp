@@ -13,23 +13,38 @@ parse::parse(const std::vector<token>* tokens)
 inline void parse::parseSt(const token* t)
 {
     node::st st;
-    st.vals.push_back(*t);
 
     if(t->type == tokenType::curlyOpen ||
         t->type == tokenType::curlyClose)
     {
+        st.vals.push_back(*t);
         prog.sts.push_back(st);
+        ++index;
         return;
     }
-    index++;
 
-    for(; index < tokens->size(); index++){
+    for(; index < tokens->size(); ++index){
         if(tokens->at(index).type == tokenType::semicolon){
             prog.sts.push_back(st);
             return; 
         }
 
-        st.vals.push_back(tokens->at(index));
+        switch (tokens->at(index).type)
+        {
+        case tokenType::_int:
+        case tokenType::_char:
+            st.vals.push_back(tokens->at(index));
+            if(index + 1 < tokens->size() && tokens->at(index + 1).type == tokenType::mul){
+                st.vals.push_back(token{.type = tokenType::ptr});
+                ++index;
+            }
+            break;
+
+        default:
+            st.vals.push_back(tokens->at(index));
+            break;
+        }
+
 
         if(tokens->at(index).type == tokenType::curlyOpen ||
             tokens->at(index).type == tokenType::curlyClose)
