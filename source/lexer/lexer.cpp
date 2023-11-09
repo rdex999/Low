@@ -115,7 +115,18 @@ std::vector<token> lexer::createTokens()
                 }
             }
 
-            if(buffer == "+="){
+            if(buffer == "//"){
+                buffer.clear();
+                while(index < src.size()){
+                    if(src[index] == '\n'){
+                        break;
+                    }
+                    take();
+                }
+                continue;
+            }
+
+            else if(buffer == "+="){
                 tokens.push_back(token{.type = tokenType::addEq});
             }
 

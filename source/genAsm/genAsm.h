@@ -63,7 +63,7 @@ class genAsm
         int genIfExpr(int from, int lable);
 
         inline void genExit();
-        inline void genInt();
+        inline void genInt(int idx = 0);
         inline void genChar(int idx = 0);
         inline void genUpdateIdent();   
         inline void genCurly(int idx = 0);

@@ -1,2 +1,15 @@
-char c = 'a';
-exit c;
+char c = 'B'; // this is a comment!
+if c >= 'a'{
+    if c <= 'z'{
+        exit 1;
+    }
+}
+if c >= 'A'{ 
+    int x = 30;
+    if c <= 'Z'{
+        exit x;
+    }
+    char ch = 'r';
+}
+
+exit 50;

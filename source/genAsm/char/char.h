@@ -15,6 +15,7 @@ inline void genAsm::genChar(int idx)
                 var v = {.stackLoc = stackLoc, .size = 1, .scope = (int)scopeStackLoc.size()};
                 if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr){
                     v.ptrReadBytes = 1;
+                    v.size = 8;
                 }
 
                 vars.insert({prog->sts.at(index).vals.at(i).value, v});
