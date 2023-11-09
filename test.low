@@ -1,6 +1,4 @@
 int x = 10;
 int ptr y = &x;
 
-*y--;
-
-exit x;
+exit ++ *y;

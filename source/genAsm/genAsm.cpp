@@ -71,13 +71,13 @@ int genAsm::genSingle(int idx, const char* reg)
         (prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::pp ||
         prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::mm))
     {
-        genPostIncDec(retIdx++, reg);
+        retIdx = genPostIncDec(retIdx, reg);
         goto checkMulDiv;
 
     }else if(prog->sts.at(index).vals.at(retIdx).type == tokenType::pp ||
         prog->sts.at(index).vals.at(retIdx).type == tokenType::mm)
     {
-        genPreIncDec(retIdx++, reg);
+        retIdx = genPreIncDec(retIdx, reg);
         goto checkMulDiv;
     }
 
@@ -116,11 +116,23 @@ int genAsm::genSingle(int idx, const char* reg)
 
     case tokenType::mul:{ // treating start as a pointer here
         if(retIdx+1 < prog->sts.at(index).vals.size()){
-            var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
-            outAsm << "mov " << selectReg("rbx", v->size) << ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
-            
-            outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", "
-                << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+
+            if(retIdx+2 < prog->sts.at(index).vals.size() &&
+                (prog->sts.at(index).vals.at(retIdx+2).type == tokenType::mm ||
+                prog->sts.at(index).vals.at(retIdx+2).type == tokenType::pp))
+            {
+                retIdx = genPostIncDec(retIdx, reg);
+
+            }else{
+                var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
+                outAsm << "mov " << selectReg("rbx", v->size) <<
+                    ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
+
+                outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", "
+                    << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            }
+
+            break;
         
         }else{
             std::cerr << "Error, cannot use dereference operator(*) without a value." << std::endl;
