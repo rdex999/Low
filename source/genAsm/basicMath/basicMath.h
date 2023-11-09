@@ -2,25 +2,28 @@
 
 int genAsm::genExpr(int valsIdx)
 {
-    for(int i=valsIdx; i<prog->sts.at(index).vals.size(); i++)
+    bool isPrevOp = true;
+    for(valsIdx; valsIdx<prog->sts.at(index).vals.size(); ++valsIdx)
     {
-        switch (prog->sts.at(index).vals.at(i).type)
+        switch (prog->sts.at(index).vals.at(valsIdx).type)
         {
         case tokenType::parenOpen:
-            i = genExpr(i+1);
+            valsIdx = genExpr(valsIdx+1);
+            isPrevOp = true;
             break;
         
         case tokenType::parenClose:
-            return i; 
+            return valsIdx; 
         
         case tokenType::add:{
-            if(i + 1 >= prog->sts.at(index).vals.size()){
+            isPrevOp = true;
+            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
                 exit(1);
             }
 
             push("rdi", 8);
-            i = genSingle(i + 1, "rbx");
+            valsIdx = genSingle(valsIdx + 1, "rbx");
             pop("rdi", 8);
             outAsm << "add rdi, rbx\n\t";
 
@@ -28,51 +31,62 @@ int genAsm::genExpr(int valsIdx)
         }
 
         case tokenType::sub:{
-            if(i + 1 >= prog->sts.at(index).vals.size()){
+            isPrevOp = true;
+            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
                 exit(1);
             }
 
             push("rdi", 8);
-            i = genSingle(i + 1, "rbx");
+            valsIdx = genSingle(valsIdx + 1, "rbx");
             pop("rdi", 8);
             outAsm << "sub rdi, rbx\n\t";
 
             break;
         }
 
-        case tokenType::mul:{
-            if(i + 1 >= prog->sts.at(index).vals.size()){
-                std::cerr << "Error, cannot use multiplication(*) operator without a value." << std::endl;
+        case tokenType::mul:{ // aka star(*) (i will change it to star in the future)
+            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+                std::cerr << "Error, cannot use multiplication/derefrence(*) operator without a value." << std::endl;
                 exit(1);
-            } 
+            }
+
+            // if the previous thing is an operator, then treat this * as a pointer
+            if(isPrevOp){
+                valsIdx = genSingle(valsIdx, "rdi");
+                isPrevOp = false;
+                break;
+            }
 
             outAsm << "mov rax, rdi\n\t";
-            i = genMulDiv(i);
+            valsIdx = genMulDiv(valsIdx);
             outAsm << "mov rdi, rax\n\t";
+            isPrevOp = true;
             break;
         }
 
         case tokenType::div:{
-            if(i + 1 >= prog->sts.at(index).vals.size()){
+            isPrevOp = true;
+            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use division(/) operator without a value." << std::endl;
                 exit(1);
             }
 
             outAsm << "mov rax, rdi\n\t";
-            i = genMulDiv(i);
+            valsIdx = genMulDiv(valsIdx);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
 
         case tokenType::percent:{
-            if(i + 1 >= prog->sts.at(index).vals.size()){
+            isPrevOp = true;
+            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
                 std::cerr << "Error, cannot use modulo(%) operator without a value." << std::endl;
                 exit(1);
             }
 
             outAsm << "mov rax, rdi\n\t";
-            i = genMulDiv(i);
+            valsIdx = genMulDiv(valsIdx);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
@@ -87,15 +101,16 @@ int genAsm::genExpr(int valsIdx)
         case tokenType::_and:
         case tokenType::_or:
         case tokenType::curlyOpen:
-            return i;
+            return valsIdx;
 
 
         default:
-            i = genSingle(i, "rdi");
+            valsIdx = genSingle(valsIdx, "rdi");
+            isPrevOp = false;
             break;
         }
     }
-    return -1;
+    return valsIdx;
 }
 
 int genAsm::genMulDiv(int idx)

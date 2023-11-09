@@ -40,6 +40,7 @@ enum class tokenType
     dQoute, // " "
     _char, // char data type
     ptr, // ptr keyword, for pointers. (char ptr myString = "string";)
+    singleAnd, // &
 };
 
 typedef struct token

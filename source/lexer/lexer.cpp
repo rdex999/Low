@@ -178,6 +178,10 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::percent});
             }
 
+            else if(buffer == "&"){
+                tokens.push_back(token{.type = tokenType::singleAnd});
+            }
+
             else if(buffer == "("){
                 tokens.push_back(token{.type = tokenType::parenOpen});
             }

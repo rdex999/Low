@@ -100,6 +100,33 @@ int genAsm::genSingle(int idx, const char* reg)
         break;
     }
 
+    case tokenType::singleAnd:{
+        if(retIdx+1 < prog->sts.at(index).vals.size()){
+            var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
+
+            outAsm << "lea " << selectReg(reg, 8) << ", [rsp + " << v->stackLoc << "]\n\t";
+
+        }else{
+            std::cerr << "Error, cannot use address of operator(&) without a value." << std::endl;
+            exit(1);
+        }
+        break;
+    }
+
+    case tokenType::mul:{ // treating start as a pointer here
+        if(retIdx+1 < prog->sts.at(index).vals.size()){
+            var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
+            outAsm << "mov " << selectReg("rbx", v->size) << ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
+            
+            outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", "
+                << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+        
+        }else{
+            std::cerr << "Error, cannot use dereference operator(*) without a value." << std::endl;
+            exit(1);
+        }
+    }
+
     case tokenType::parenOpen:
         retIdx = genExpr(retIdx + 1);
         break;
