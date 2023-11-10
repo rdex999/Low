@@ -1,3 +1,1 @@
-printStr("Hello\tworld!\n");
-
-exit 5;
+printStr("Hello world!\nheyyyyyy\rhello\n");

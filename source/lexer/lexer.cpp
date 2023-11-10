@@ -72,23 +72,77 @@ std::vector<token> lexer::createTokens()
         }
 
         else if(src[index] == '\''){
-            if(src.size() > index + 2 && src[index + 2] == '\''){
-                buffer += take();
-                buffer += take();
-                buffer += take();
+            if(src.size() > index + 2){
+                if(src[index+1] == '\\'){
+                    switch (src[index+2])
+                    {
+                    case 'n':
+                        buffer = "10";
+                        index += 4; 
+                        break;
+
+                    case 'r':
+                        buffer = "13";
+                        index += 4; 
+                        break;
+                    
+                    case 't':
+                        buffer = "9";
+                        index += 4;
+                        break;
+                     
+                    case 'b':
+                        buffer = "8";
+                        index += 4;
+                        break;
+
+                    case 'f':
+                        buffer = "12";
+                        index += 4;
+                        break;
+
+                    case '\'':
+                        buffer = "39";
+                        index += 4;
+                        break;
+
+                    default:
+                        index += 2; 
+                        buffer += take();
+                        if(index < src.size() && src[index] == '\''){
+                            ++index;
+                        }else{
+                            std::cerr << "Error, cannot use single quotes for multiple characters.\nUse double quotes(\") for multiple characters."
+                                << std::endl;
+                    
+                            exit(1);
+                        }
+                        break;
+                    }
+                }else if(src[index+2] == '\''){
+                    buffer += take();
+                    buffer += take();
+                    buffer += take();
+                }else{
+                    std::cerr << "Error, cannot use single quotes for multiple characters.\nUse double quotes(\") for multiple characters."
+                        << std::endl;
+                    
+                    exit(1);
+                }
                 tokens.push_back(token{.type = tokenType::quote, .value = buffer});
                 buffer.clear();
                 continue;
             }else{
-                std::cerr << "Error, cannot use single quote ('') on multible characters.\nSingle quotes are for one character."
-                    << std::endl;
-                
+                std::cerr << "Error, forgot a closing quote?" << std::endl;
                 exit(1);
             }
         }
 
         else if(src[index] == '"'){
             while(index < src.size()){
+                if(src[index] == '\\'){
+                    buffer += take();
+                }
                 buffer += take();
                 if(index < src.size()){
                     if(src[index] == '"'){

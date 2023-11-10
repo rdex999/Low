@@ -226,9 +226,22 @@ inline std::string genAsm::handleSpecialChar(const std::string* str)
                 out.replace(i, 2, "\", 9, \""); 
                 break;
 
+            case '"': 
+                out.replace(i, 2, "\", 34, \""); 
+                break;
+
+            case 'b':
+                out.replace(i, 2, "\", 8, \""); 
+                break;
+
+            case 'f':
+                out.replace(i, 2, "\", 12, \""); 
+                break;
+
             default:
                 out.erase(i, 1);
                 ++i;
+
                 break;
             }
         }
