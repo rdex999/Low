@@ -8,11 +8,15 @@
 class genAsm
 {
     public: 
-        genAsm(const node::program* prog);
+        genAsm(const node::program* prog, bool lowStdLib);
 
-        std::stringstream outAsm;
+        std::stringstream finalAsm;
     
     private:
+
+        std::stringstream outAsm;
+        std::stringstream secData;
+        std::stringstream secText;
 
         struct var
         {
@@ -20,6 +24,8 @@ class genAsm
             int size; // in bytes (int = 4, char = 1..)
             int scope;
             int ptrReadBytes = -1; // if -1 then not a pointer
+            bool isFunction = false;
+            bool isExtern = false;
         };
 
         std::vector<int> scopeStackLoc;
@@ -46,6 +52,10 @@ class genAsm
         std::string selectReg(const char* reg, int size);
         std::string selectWord(int size);
 
+        inline std::string handleSpecialChar(const std::string* str);
+        inline std::string createTextVarName();
+        size_t textVarCount = 0;
+
         void genStmt();
 
         // the final value is in RDX
@@ -65,9 +75,10 @@ class genAsm
         inline void genExit();
         inline void genInt(int idx = 0);
         inline void genChar(int idx = 0);
-        inline void genUpdateIdent();   
+        inline void genUpdateIdent();
         inline void genCurly(int idx = 0);
         inline int genPreIncDec(int idx, const char* reg = nullptr);
         inline int genPostIncDec(int idx, const char* reg = nullptr);
         inline void genIf();
+        inline int genFunctionCall(int idx);
 };

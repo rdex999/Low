@@ -8,12 +8,23 @@
 #include "int/int.h"
 #include "ident/ident.h"
 #include "char/char.h"
+#include "functions/functions.h"
 
-genAsm::genAsm(const node::program* prog)
+genAsm::genAsm(const node::program* prog, bool lowStdLib)
 {
     this->prog = prog;
 
-    outAsm << "bits 64\n\nsection .text\n\tglobal _start\n\n_start:\n\t";
+    secData << "bits 64\n\nsection .data";
+    secText << "\n\nsection .text\n\tglobal _start";
+    outAsm << "\n\n_start:\n\t";
+    
+    if(lowStdLib){
+        vars.insert({"printStr", var{.stackLoc = 0, .size = -1,
+            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true}});
+
+        secText << "\n\textern printStr";
+    }
+
 
     for(index = 0; index < prog->sts.size(); index++)
     {
@@ -21,6 +32,8 @@ genAsm::genAsm(const node::program* prog)
     }
 
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
+
+    finalAsm << secData.str() << secText.str() << outAsm.str();
 }
 
 void genAsm::genStmt()
@@ -90,6 +103,15 @@ int genAsm::genSingle(int idx, const char* reg)
     case tokenType::quote:
         outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
         break;
+
+    case tokenType::dQoute:{
+        std::string textName = createTextVarName();
+        secData << "\n\t" << textName <<
+            " db " << handleSpecialChar(&prog->sts.at(index).vals.at(retIdx).value) << ", 0";
+
+        outAsm << "mov rdi, " << textName << "\n\t";
+        break;
+    }
 
     case tokenType::ident:{
 
@@ -169,6 +191,11 @@ int genAsm::genSingle(int idx, const char* reg)
     return retIdx;
 }
 
+inline std::string genAsm::createTextVarName()
+{
+    return std::format("text{}", textVarCount++);
+}
+
 inline void genAsm::genExit()
 {
     if(prog->sts.at(index).vals.at(1).type == tokenType::intLit && prog->sts.at(index).vals.size() == 2){
@@ -178,4 +205,33 @@ inline void genAsm::genExit()
         outAsm << "mov rax, 60\n\t";
         outAsm << "syscall\n\t";
     }
+}
+
+inline std::string genAsm::handleSpecialChar(const std::string* str)
+{
+    std::string out = *str;
+    for(int i=0; i<out.size(); ++i){
+        if(out.at(i) == '\\' && i+1 < out.size()){
+            switch (out.at(i+1))
+            {
+            case 'n':
+                out.replace(i, 2, "\", 10, \"");
+                break;
+            
+            case 'r':
+                out.replace(i, 2, "\", 13, \""); 
+                break;
+            
+            case 't':
+                out.replace(i, 2, "\", 9, \""); 
+                break;
+
+            default:
+                out.erase(i, 1);
+                ++i;
+                break;
+            }
+        }
+    }
+    return out;
 }

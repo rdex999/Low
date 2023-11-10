@@ -7,7 +7,7 @@ parseArgs::parseArgs(int argc, char **argv)
         exit(1);
     }
 
-    for(int i=1; i<argc; i++){
+    for(int i=1; i<argc; ++i){
         
         // creating an std::string for comparing
         std::string arg = argv[i];
@@ -48,6 +48,10 @@ parseArgs::parseArgs(int argc, char **argv)
             }
         }
 
+        else if(arg == "-nS" || arg == "--noStdLib"){
+            args["noStdLib"].push_back("1");
+        }
+
         else if(arg.ends_with(".low")){
             args["input"].push_back(arg);
         }
@@ -82,6 +86,10 @@ parseArgs::parseArgs(int argc, char **argv)
     if(args.find("format") == args.end()){
         args["format"].push_back("elf64");
     }
+
+    if(!args.contains("noStdLib")){
+        args["noStdLib"].push_back("0");
+    }
 }
 
 std::vector<std::string>& parseArgs::operator[](const std::string& val)
@@ -93,9 +101,9 @@ void parseArgs::printHelp()
 {
     std::cout << "The \"low\" compiler.\n";
     std::cout << "Usage: low <file.low> -o output\n\n";
-    std::cout << "Opetions:\n\t-h --help | print this help message.\n\t";
-    std::cout << "-o --output | the output file name (default a.out)\n\t";
-    std::cout << "-f --format | the binary format (default elf64) (currently only working for elf64)\n\t";
-    std::cout << "-t --tempDirName | the name of the temp directory that is created (and deleted) (default is 'lowTempBuildDirectory)"
-        << std::endl;
+    std::cout << "Opetions:\n\t-h --help\t| print this help message.\n\t";
+    std::cout << "-o --output\t| the output file name (default a.out)\n\t";
+    std::cout << "-f --format\t| the binary format (default elf64) (currently only working for elf64)\n\t";
+    std::cout << "-t --tempDirName| the name of the temp directory that is created (and deleted) (default is 'lowTempBuildDirectory)\n\t";
+    std::cout << "-nS --noStdLib\t| if specified, wont link with the low standard library. (default is false, (linking with lowStdLib))" << std::endl;
 }

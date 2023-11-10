@@ -12,10 +12,20 @@ inline void genAsm::genUpdateIdent()
         }
 
         if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
-            v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+            if(i+1 < prog->sts.at(index).vals.size() && prog->sts.at(index).vals.at(i+1).type != tokenType::parenOpen){
+                v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+            } 
             identIdx = i;
             break;
         }
+    }
+
+    // if its a function call. foo()
+    if(identIdx+1 < prog->sts.at(index).vals.size() &&
+        prog->sts.at(index).vals.at(identIdx+1).type == tokenType::parenOpen)
+    {
+        genFunctionCall(identIdx);
+        return;
     }
 
     if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp &&
@@ -93,8 +103,7 @@ inline void genAsm::genUpdateIdent()
         outAsm << "xor rdx, rdx\n\t";
 
         if(ptr){
-            outAsm << "mov " << selectReg("rax", v->ptrReadBytes)
-                << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            outAsm << "mov " << selectReg("rax", v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
 
             outAsm << "div rdi\n\t";
 

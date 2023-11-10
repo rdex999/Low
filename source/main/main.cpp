@@ -22,8 +22,9 @@ inline std::string selectArchArg(const std::string& str)
 int main(int argc, char** argv)
 {
     parseArgs args(argc, argv);
+    bool lowStdLib = args["noStdLib"].at(0) == "1" ? false : true;
 
-    std::string files;
+    std::string objFiles;
     for(const std::string& filename : args["input"])
     {
         std::ifstream srcFile(filename);
@@ -36,28 +37,32 @@ int main(int argc, char** argv)
         srcFile.close();
 
         std::vector<token> tokens = lexer(fileStream.str()).createTokens();
-        
+
         parse prased(&tokens);
-        genAsm generatedAsm(&prased.prog);
+        genAsm generatedAsm(&prased.prog, lowStdLib);
 
         std::filesystem::create_directory(args["tempDirName"][0]);
         std::ofstream outAsm(args["tempDirName"][0] + '/' + filename + ".asm");
-        outAsm << generatedAsm.outAsm.str();
+        outAsm << generatedAsm.finalAsm.str();
         outAsm.close();
 
         system(("nasm -o " + args["tempDirName"][0] + '/' + filename + ".o -f" + args["format"][0] + ' ' +
             args["tempDirName"][0] + '/' + filename + ".asm").c_str());
 
-        files += args["tempDirName"][0] + '/' + filename + ".o ";
+        objFiles += args["tempDirName"][0] + '/' + filename + ".o ";
     }
 
     if(args.args.contains("obj")){
         for(const std::string& objFile : args["obj"]){
-            files += objFile + ' ';
+            objFiles += objFile + ' ';
         }
     }
 
-    system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + files).c_str());
+    if(args["noStdLib"].at(0) == "0"){
+        objFiles += "lowStdLib/object/printStr.obj ";
+    }
+
+    system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + objFiles).c_str());
 
     // comment it out for debug 
     //std::filesystem::remove_all(args["tempDirName"][0]);

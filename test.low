@@ -1,4 +1,3 @@
-int x = 10;
-int ptr y = &x;
+printStr("Hello\tworld!\n");
 
-exit x;
+exit 5;
