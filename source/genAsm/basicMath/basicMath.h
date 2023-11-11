@@ -53,7 +53,8 @@ int genAsm::genExpr(int valsIdx)
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                valsIdx = genSingle(valsIdx, "rdi");
+                valsIdx = genSingle(valsIdx+1, "rdi");
+                outAsm << "mov rdi, [rdi]\n\t";
                 isPrevOp = false;
                 break;
             }

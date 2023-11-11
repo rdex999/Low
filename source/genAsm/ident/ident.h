@@ -34,6 +34,7 @@ inline void genAsm::genUpdateIdent()
     for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
         if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
             v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+            break;
         }
     }
 
@@ -159,10 +160,18 @@ inline void genAsm::genUpdateIdent()
 inline int genAsm::genPreIncDec(int idx, const char* reg)
 {
     var* v = nullptr;
+    int retIdx = idx;
     
     if(prog->sts.at(index).vals.at(idx+1).type == tokenType::mul){
-        v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx + 2).value, scopeStackLoc.size());
-        outAsm << "mov rbx, QWORD [rsp + " << v->stackLoc << "]\n\t";
+        
+        for(int i=idx; i<prog->sts.at(index).vals.size(); ++i){
+            if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
+                v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+                break;
+            }
+        }
+
+        retIdx = genSingle(idx+2, "rbx");
 
         if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
             outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
@@ -173,7 +182,7 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
         if(reg){
             outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
         }
-        return idx + 2;
+        return retIdx;
 
     }else{
         v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx + 1).value, scopeStackLoc.size());

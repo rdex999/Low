@@ -1,7 +1,4 @@
 int x = 10;
-int a = 20;
-int ptr y = &x;
+int y = 20;
 
-* (y+4) = 40;
-
-exit a;
+exit * ( &x + 4);
