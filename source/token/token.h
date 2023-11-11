@@ -27,6 +27,7 @@ enum class tokenType
     curlyOpen, // {
     curlyClose, // }
     _if,
+    _else, 
     _or,
     _and,
     bEqual, // boolean equal, ==

@@ -30,6 +30,14 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_if});
             }
 
+            else if(buffer == "is"){
+                tokens.push_back(token{.type = tokenType::bEqual});
+            }
+
+            else if(buffer == "else"){
+                tokens.push_back(token{.type = tokenType::_else});
+            }
+
             else if(buffer == "and"){
                 tokens.push_back(token{.type = tokenType::_and});
             }

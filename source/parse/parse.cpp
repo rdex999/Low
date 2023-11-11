@@ -19,7 +19,6 @@ inline void parse::parseSt(const token* t)
     {
         st.vals.push_back(*t);
         prog.sts.push_back(st);
-        ++index;
         return;
     }
 
@@ -42,6 +41,13 @@ inline void parse::parseSt(const token* t)
 
         default:
             st.vals.push_back(tokens->at(index));
+            if(index+1 < tokens->size() && tokens->at(index).type == tokenType::_else &&
+                tokens->at(index+1).type == tokenType::curlyOpen)
+            {
+                st.vals.push_back(tokens->at(++index));
+                prog.sts.push_back(st);
+                return;
+            }
             break;
         }
 

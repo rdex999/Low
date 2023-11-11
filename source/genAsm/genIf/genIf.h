@@ -13,6 +13,9 @@ int genAsm::genIfExpr(int from, int lable)
             for(++index; index < prog->sts.size(); ++index){
                 genStmt();
                 if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
+                    if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type == tokenType::_else){
+                        outAsm << "jmp .L" << lable + 3 << "\n\t";
+                    }
                     outAsm << "\r.L" << lable + 1 << ":\n\t";
                     return -1;
                 }

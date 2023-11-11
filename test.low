@@ -1,2 +1,5 @@
-char a = 'b';
-printChar(a);
+if 0{
+    printStr("if\n");
+}else{
+    printStr("else\n");
+}
