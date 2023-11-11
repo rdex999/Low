@@ -21,8 +21,11 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     if(lowStdLib){
         vars.insert({"printStr", var{.stackLoc = 0, .size = -1,
             .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true}});
-
         secText << "\n\textern printStr";
+
+        vars.insert({"printChar", var{.stackLoc = 0, .size = -1,
+            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true, .stackLocReg = "rsi"}});
+        secText << "\n\textern printChar";
     }
 
 

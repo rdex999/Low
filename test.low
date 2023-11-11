@@ -1,4 +1,2 @@
-int x = 10;
-int y = 20;
-
-exit * ( &x + 4);
+char a = 'b';
+printChar(a);

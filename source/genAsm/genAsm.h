@@ -26,6 +26,7 @@ class genAsm
             int ptrReadBytes = -1; // if -1 then not a pointer
             bool isFunction = false;
             bool isExtern = false;
+            const char* stackLocReg = nullptr; 
         };
 
         std::vector<int> scopeStackLoc;

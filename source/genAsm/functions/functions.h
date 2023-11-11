@@ -12,6 +12,10 @@ inline int genAsm::genFunctionCall(int idx)
 
     retIdx = genExpr(idx+2);
 
+    if(v->stackLocReg){
+        outAsm << "lea " << v->stackLocReg << ", [rsp + " << stackLoc << "]\n\t";
+    }
+
     outAsm << "call " << prog->sts.at(index).vals.at(idx).value << "\n\t";
     return retIdx;
 }

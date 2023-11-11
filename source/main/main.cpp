@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     }
 
     if(args["noStdLib"].at(0) == "0"){
-        objFiles += "lowStdLib/object/printStr.obj ";
+        objFiles += "lowStdLib/object/lowStdLib.obj ";
     }
 
     system(("ld -o " + args["output"][0] + " -m " + selectArchArg(args["format"][0]) + ' ' + objFiles).c_str());
