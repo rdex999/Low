@@ -6,34 +6,34 @@ inline void genAsm::genUpdateIdent()
     int identIdx = -1;
     bool ptr = false;
 
+    if(prog->sts.at(index).vals.at(0).type == tokenType::mul){
+        ptr = true;
+        identIdx = genSingle(1, "rbx");
+        if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm  &&
+            prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp)
+        {
+            push("rbx", 8);
+            genExpr(identIdx+2);
+            pop("rbx", 8);
+        }
+
+    }else if(prog->sts.at(index).vals.at(0).type == tokenType::ident){
+        if(prog->sts.at(index).vals.at(1).type == tokenType::parenOpen){ // if is a function call
+            genFunctionCall(0);
+            return;
+        }
+
+        identIdx = 0;
+        if(prog->sts.at(index).vals.at(1).type != tokenType::mm  &&
+            prog->sts.at(index).vals.at(1).type != tokenType::pp)
+        {
+            genExpr(2);
+        }
+    }
+ 
     for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
-        if(prog->sts.at(index).vals.at(i).type == tokenType::mul){
-            ptr = true;
-        }
-
         if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
-            if(i+1 < prog->sts.at(index).vals.size() && prog->sts.at(index).vals.at(i+1).type != tokenType::parenOpen){
-                v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
-            } 
-            identIdx = i;
-            break;
-        }
-    }
-
-    // if its a function call. foo()
-    if(identIdx+1 < prog->sts.at(index).vals.size() &&
-        prog->sts.at(index).vals.at(identIdx+1).type == tokenType::parenOpen)
-    {
-        genFunctionCall(identIdx);
-        return;
-    }
-
-    if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp &&
-        prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm)
-    {
-        genExpr(identIdx+2);
-        if(ptr){
-            outAsm << "mov rbx, QWORD [rsp + " << v->stackLoc << "]\n\t";
+            v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
         }
     }
 
@@ -51,9 +51,15 @@ inline void genAsm::genUpdateIdent()
         break;
 
     case tokenType::pp:
+        if(ptr){
+            outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+        }else{
+            genPostIncDec(identIdx);
+        }
+        break; 
     case tokenType::mm:
         if(ptr){
-            genPostIncDec(identIdx-1);
+            outAsm << "dec " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
         }else{
             genPostIncDec(identIdx);
         }

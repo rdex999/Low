@@ -1,1 +1,7 @@
-printStr("Hello world!\nheyyyyyy\rhello\n");
+int x = 10;
+int a = 20;
+int ptr y = &x;
+
+* (y+4) = 40;
+
+exit a;
