@@ -14,42 +14,42 @@ int genAsm::genIfExpr(int from, int lable)
             push("rdi", 8);
             from = genExpr(from+1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tjne .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rdi, rbx\n\tjne .L" << lable << "\n\t";
             break;
 
         case tokenType::bNotEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tje .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rdi, rbx\n\tje .L" << lable << "\n\t";
             break;
         
         case tokenType::g:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjle .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjle .L" << lable << "\n\t";
             break;
         
         case tokenType::gEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjl .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjl .L" << lable << "\n\t";
             break;
         
         case tokenType::l:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjge .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjge .L" << lable << "\n\t";
             break;
         
         case tokenType::lEq:
             push("rdi", 8);
             from = genExpr(from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjg .L" << lable + 1 << "\n\t";
+            outAsm << "cmp rbx, rdi\n\tjg .L" << lable << "\n\t";
             break;
 
         default:
