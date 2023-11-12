@@ -17,12 +17,6 @@ inline void genAsm::genCurly(int idx, bool isFromElse)
     if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyOpen){
 
         scopeStackLoc.push_back(stackLoc);
-        lables.push_back(lableNum++);
-        //if(isFromElse){
-        //    outAsm << "jmp .L" << lables.at(lables.size() - 1) + 1 << "\n\t";
-        //}
-        //outAsm << "\r.L" << lables.at(lables.size() - 1) << ":\n\t";
-
 
     }else if(prog->sts.at(index).vals.at(idx).type == tokenType::curlyClose){
 
@@ -30,10 +24,10 @@ inline void genAsm::genCurly(int idx, bool isFromElse)
         scopeStackLoc.pop_back();
 
         if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type == tokenType::_else){
-            outAsm << "jmp .L" << lables.at(lables.size() - 1) + 1 << "\n\t";
+            outAsm << "jmp .L" << lableNum + 1 << "\n\t";
         }
-        outAsm << "\r.L" << lables.at(lables.size() - 1) << ":\n\t";
-        lables.pop_back();
+        outAsm << "\r.L" << lableNum << ":\n\t";
+        ++lableNum;
 
         for(std::map<std::string, var>::iterator itr = vars.begin(); itr != vars.end();){
             if(itr->second.scope > scopeStackLoc.size()){

@@ -30,7 +30,6 @@ class genAsm
         };
 
         std::vector<int> scopeStackLoc;
-        std::vector<int> lables;
 
         std::multimap<std::string, var> vars;
 
