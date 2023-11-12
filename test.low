@@ -1,5 +1,10 @@
 if 0{
-    printStr("if\n");
+    printStr("first if\n");
 }else{
     printStr("else\n");
+    if 0{
+        printStr("else if\n");
+    }else{
+        printStr("else if else\n");
+    }
 }

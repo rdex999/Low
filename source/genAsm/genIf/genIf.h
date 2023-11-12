@@ -7,21 +7,7 @@ int genAsm::genIfExpr(int from, int lable)
         switch (prog->sts.at(index).vals.at(from).type)
         {
         case tokenType::curlyOpen:
-            outAsm << "\r.L" << lable << ":\n\t";
-            genCurly(from);
-            lableNum += 2; 
-            for(++index; index < prog->sts.size(); ++index){
-                genStmt();
-                if(prog->sts.at(index).vals.at(0).type == tokenType::curlyClose){
-                    if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type == tokenType::_else){
-                        outAsm << "jmp .L" << lable + 3 << "\n\t";
-                    }
-                    outAsm << "\r.L" << lable + 1 << ":\n\t";
-                    return -1;
-                }
-            }
-            std::cerr << "Error, expected '}'" << std::endl;
-            exit(1);
+            genCurly(from, prog->sts.at(index).vals.at(from-1).type == tokenType::_else ? true : false);
             break;
 
         case tokenType::bEqual:
@@ -75,7 +61,7 @@ int genAsm::genIfExpr(int from, int lable)
                 prog->sts.at(index).vals.at(from+1).type == tokenType::curlyOpen ||
                 prog->sts.at(index).vals.at(from+1).type == tokenType::parenClose)
             {
-                outAsm << "test rdi, rdi\n\tjz .L" << lable + 1 << "\n\t";
+                outAsm << "test rdi, rdi\n\tjz .L" << lable << "\n\t";
             }
             break;
         }
