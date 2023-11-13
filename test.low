@@ -1,5 +1,10 @@
-if 0{
+if 1{
     printStr("first if\n");
+    if 1{
+        printStr("if if\n");
+    }else{
+        printStr("if if else\n");
+    }
 }else{
     printStr("else\n");
     if 0{
@@ -14,3 +19,4 @@ if 0{
     }
     printStr("after nested in else\n");
 }
+printStr("after all if's\n");

@@ -24,7 +24,22 @@ inline void genAsm::genCurly(int idx, bool isFromElse)
         scopeStackLoc.pop_back();
 
         if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type == tokenType::_else){
-            outAsm << "jmp .L" << lableNum + 1 << "\n\t";
+            size_t curlyCount = 0, lableCount = 0;
+            for(size_t i = index+1; i<prog->sts.size(); ++i){
+                for(int j=0; j<prog->sts.at(i).vals.size(); ++j){
+                    if(prog->sts.at(i).vals.at(j).type == tokenType::curlyOpen){
+                        ++curlyCount;
+                    }else if(prog->sts.at(i).vals.at(j).type == tokenType::curlyClose){
+                        --curlyCount;
+                        ++lableCount;
+                        if(curlyCount == 0){
+                            goto jmpL;
+                        }
+                    }
+                }
+            }
+            jmpL:
+                outAsm << "jmp .L" << lableNum+lableCount << "\n\t";
         }
         outAsm << "\r.L" << lableNum << ":\n\t";
         ++lableNum;

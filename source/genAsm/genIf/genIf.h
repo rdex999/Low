@@ -71,5 +71,20 @@ int genAsm::genIfExpr(int from, int lable)
 
 inline void genAsm::genIf()
 {
-    genIfExpr(1, lableNum);
+    size_t lableCount = 0, curlyCount = 0;
+    for(size_t i = index; i<prog->sts.size() ; ++i){
+        for(int j=0; j<prog->sts.at(i).vals.size(); ++j){
+            if(prog->sts.at(i).vals.at(j).type == tokenType::curlyOpen){
+                ++curlyCount;
+            }else if(prog->sts.at(i).vals.at(j).type == tokenType::curlyClose){
+                --curlyCount; 
+                ++lableCount;
+                if(curlyCount == 0){
+                    goto genIfL;
+                }
+            }
+        }
+    }
+    genIfL:
+        genIfExpr(1, lableNum+lableCount-1);
 }
