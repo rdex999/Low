@@ -10,7 +10,7 @@ inline int genAsm::genFunctionCall(int idx)
         exit(1);
     }
 
-    retIdx = genExpr(idx+2);
+    retIdx = genExpr(index, idx+2);
 
     if(v->stackLocReg){
         outAsm << "lea " << v->stackLocReg << ", [rsp + " << stackLoc << "]\n\t";

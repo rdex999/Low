@@ -8,12 +8,12 @@ inline void genAsm::genUpdateIdent()
 
     if(prog->sts.at(index).vals.at(0).type == tokenType::mul){
         ptr = true;
-        identIdx = genSingle(1, "rbx");
+        identIdx = genSingle(1, "rbx", index);
         if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm  &&
             prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp)
         {
             push("rbx", 8);
-            genExpr(identIdx+2);
+            genExpr(index, identIdx+2);
             pop("rbx", 8);
         }
 
@@ -27,7 +27,7 @@ inline void genAsm::genUpdateIdent()
         if(prog->sts.at(index).vals.at(1).type != tokenType::mm  &&
             prog->sts.at(index).vals.at(1).type != tokenType::pp)
         {
-            genExpr(2);
+            genExpr(index, 2);
         }
     }
  
@@ -171,7 +171,7 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
             }
         }
 
-        retIdx = genSingle(idx+2, "rbx");
+        retIdx = genSingle(idx+2, "rbx", index);
 
         if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
             outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";

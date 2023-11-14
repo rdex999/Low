@@ -23,7 +23,7 @@ inline void genAsm::genChar(int idx)
                     prog->sts.at(index).vals.at(i+1).type == tokenType::equal) // char ch = ...;
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
-                        i = genExpr(i+2);
+                        i = genExpr(index, i+2);
                         push(selectReg("rdi", v.size).c_str(), v.size); // dil: low 8 bits of rdi
                         i += 2;
                     }else{

@@ -1,15 +1,15 @@
 #pragma once
 
-int genAsm::genExpr(int valsIdx)
+int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 {
     bool isPrevOp = true;
-    for(valsIdx; valsIdx<prog->sts.at(index).vals.size(); ++valsIdx)
+    for(; valsIdx<prog->sts.at(stmtIdx).vals.size(); ++valsIdx)
     {
-        switch (prog->sts.at(index).vals.at(valsIdx).type)
+        switch (prog->sts.at(stmtIdx).vals.at(valsIdx).type)
         {
         case tokenType::parenOpen:
-            valsIdx = genExpr(valsIdx+1);
-            isPrevOp = true;
+            valsIdx = genExpr(stmtIdx, valsIdx+1);
+            isPrevOp = false;
             break;
         
         case tokenType::parenClose:
@@ -17,13 +17,13 @@ int genAsm::genExpr(int valsIdx)
         
         case tokenType::add:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
                 exit(1);
             }
 
             push("rdi", 8);
-            valsIdx = genSingle(valsIdx + 1, "rbx");
+            valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
             pop("rdi", 8);
             outAsm << "add rdi, rbx\n\t";
 
@@ -32,13 +32,13 @@ int genAsm::genExpr(int valsIdx)
 
         case tokenType::sub:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
                 exit(1);
             }
 
             push("rdi", 8);
-            valsIdx = genSingle(valsIdx + 1, "rbx");
+            valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
             pop("rdi", 8);
             outAsm << "sub rdi, rbx\n\t";
 
@@ -46,21 +46,21 @@ int genAsm::genExpr(int valsIdx)
         }
 
         case tokenType::mul:{ // aka star(*) (i will change it to star in the future)
-            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use multiplication/derefrence(*) operator without a value." << std::endl;
                 exit(1);
             }
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                valsIdx = genSingle(valsIdx+1, "rdi");
+                valsIdx = genSingle(valsIdx+1, "rdi", stmtIdx);
                 outAsm << "mov rdi, [rdi]\n\t";
                 isPrevOp = false;
                 break;
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx);
             outAsm << "mov rdi, rax\n\t";
             isPrevOp = true;
             break;
@@ -68,26 +68,26 @@ int genAsm::genExpr(int valsIdx)
 
         case tokenType::div:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use division(/) operator without a value." << std::endl;
                 exit(1);
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
 
         case tokenType::percent:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(index).vals.size()){
+            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use modulo(%) operator without a value." << std::endl;
                 exit(1);
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
@@ -106,7 +106,7 @@ int genAsm::genExpr(int valsIdx)
 
 
         default:
-            valsIdx = genSingle(valsIdx, "rdi");
+            valsIdx = genSingle(valsIdx, "rdi", stmtIdx);
             isPrevOp = false;
             break;
         }
@@ -114,49 +114,49 @@ int genAsm::genExpr(int valsIdx)
     return valsIdx;
 }
 
-int genAsm::genMulDiv(int idx)
+int genAsm::genMulDiv(int idx, size_t stmtIdx)
 {
-    if(prog->sts.at(index).vals.at(idx).type == tokenType::mul){
-        if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::parenOpen){
+    if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
+        if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
             push("rax", 8);
-            idx = genExpr(idx + 2);
+            idx = genExpr(stmtIdx, idx + 2);
             pop("rax", 8);
             outAsm << "mul rdi\n\t";
             return idx;
         }else{
             push("rax", 8);
-            idx = genSingle(idx + 1, "rbx");
+            idx = genSingle(idx + 1, "rbx", stmtIdx);
             pop("rax", 8);
             outAsm << "mul rbx\n\t";
             return idx;
         }
 
-    }else if(prog->sts.at(index).vals.at(idx).type == tokenType::div){
-        if(prog->sts.at(index).vals.at(idx+1).type == tokenType::parenOpen){
+    }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
+        if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
             push("rax", 8);
-            idx = genExpr(idx + 2);
+            idx = genExpr(stmtIdx, idx + 2);
             pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
             return idx;
         }else{
             push("rax", 8);
-            idx = genSingle(idx + 1, "rbx");
+            idx = genSingle(idx + 1, "rbx", stmtIdx);
             pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
             return idx;
         } 
     }
-    else if(prog->sts.at(index).vals.at(idx).type == tokenType::percent){
-        if(prog->sts.at(index).vals.at(idx+1).type == tokenType::parenOpen){
+    else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::percent){
+        if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
             push("rax", 8);
-            idx = genExpr(idx + 2);
+            idx = genExpr(stmtIdx, idx + 2);
             pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
             outAsm << "mov rax, rdx\n\t";
             return idx;
         }else{
             push("rax", 8);
-            idx = genSingle(idx + 1, "rbx");
+            idx = genSingle(idx + 1, "rbx", stmtIdx);
             pop("rax", 8);
             outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
             outAsm << "mov rax, rdx\n\t";

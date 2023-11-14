@@ -1,7 +1,4 @@
-if 0{
-    printStr("if\n");
-}else if 1{
-    printStr("elseIf\n");
-}else{
-    printStr("else\n");
+int x = 0;
+while x < 1000000000{
+    ++x;
 }

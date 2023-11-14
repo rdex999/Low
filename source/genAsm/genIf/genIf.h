@@ -1,67 +1,104 @@
 #pragma once
 
 
-int genAsm::genIfExpr(int from, int lable)
+int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool handleCurly)
 {
-    for(; from<prog->sts.at(index).vals.size(); ++from){
-        switch (prog->sts.at(index).vals.at(from).type)
+    for(; from<prog->sts.at(stmtIdx).vals.size(); ++from){
+        switch (prog->sts.at(stmtIdx).vals.at(from).type)
         {
         case tokenType::curlyOpen:
-            genCurly(from, prog->sts.at(index).vals.at(from-1).type == tokenType::_else ? true : false);
+            if(handleCurly){
+                genCurly(from, false);
+            }
             break;
 
         case tokenType::bEqual:
             push("rdi", 8);
-            from = genExpr(from+1) - 1;
+            from = genExpr(stmtIdx, from+1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tjne .L" << lable << "\n\t";
+            outAsm << "cmp rdi, rbx\n\t";
+            if(invert){
+                outAsm << "je .L" << lable << "\n\t";
+            }else{
+                outAsm << "jne .L" << lable << "\n\t";
+            }
             break;
 
         case tokenType::bNotEq:
             push("rdi", 8);
-            from = genExpr(from + 1) - 1;
+            from = genExpr(stmtIdx, from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\tje .L" << lable << "\n\t";
+            outAsm << "cmp rdi, rbx\n\t";
+            if(invert){
+                outAsm << "jne .L" << lable << "\n\t";
+            }else{
+                outAsm << "je .L" << lable << "\n\t";
+            }
             break;
         
         case tokenType::g:
             push("rdi", 8);
-            from = genExpr(from + 1) - 1;
+            from = genExpr(stmtIdx, from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjle .L" << lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\t";
+            if(invert){
+                outAsm << "jg .L" << lable << "\n\t";
+            }else{
+                outAsm << "jle .L" << lable << "\n\t";
+            }
             break;
         
         case tokenType::gEq:
             push("rdi", 8);
-            from = genExpr(from + 1) - 1;
+            from = genExpr(stmtIdx, from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjl .L" << lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\t";
+            if(invert){
+                outAsm << "jge .L" << lable << "\n\t";
+            }else{
+                outAsm << "jl .L" << lable << "\n\t";
+            }
             break;
         
         case tokenType::l:
             push("rdi", 8);
-            from = genExpr(from + 1) - 1;
+            from = genExpr(stmtIdx, from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjge .L" << lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\t";
+            if(invert){
+                outAsm << "jl .L" << lable << "\n\t";
+            }else{
+                outAsm << "jge .L" << lable << "\n\t";
+            }
             break;
         
         case tokenType::lEq:
             push("rdi", 8);
-            from = genExpr(from + 1) - 1;
+            from = genExpr(stmtIdx, from + 1) - 1;
             pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\tjg .L" << lable << "\n\t";
+            outAsm << "cmp rbx, rdi\n\t";
+            if(invert){
+                outAsm << "jle .L" << lable << "\n\t";
+            }else{
+                outAsm << "jg .L" << lable << "\n\t";
+            }
             break;
 
         default:
-            from = genExpr(from) - 1;
+            from = genExpr(stmtIdx, from) - 1;
 
             // i might change this way of checking if this is a 'self check' (if x {...})
-            if(prog->sts.at(index).vals.at(from+1).type == tokenType::_and ||
-                prog->sts.at(index).vals.at(from+1).type == tokenType::_or ||
-                prog->sts.at(index).vals.at(from+1).type == tokenType::curlyOpen ||
-                prog->sts.at(index).vals.at(from+1).type == tokenType::parenClose)
+            if(prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::_and ||
+                prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::_or ||
+                prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::curlyOpen ||
+                prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::parenClose)
             {
-                outAsm << "test rdi, rdi\n\tjz .L" << lable << "\n\t";
+                outAsm << "test rdi, rdi\n\t";
+                if(invert){
+                    outAsm << "jnz .L" << lable << "\n\t";
+                }else{
+                    outAsm << "jz .L" << lable << "\n\t";
+                }
             }
             break;
         }
@@ -80,14 +117,11 @@ inline void genAsm::genIf()
                 --curlyCount; 
                 ++lableCount;
                 if(curlyCount == 0){
-                    //if(i+2 < prog->sts.size() && prog->sts.at(i+1).vals.at(0).type == tokenType::elseIf){
-                    //    break;
-                    //}
                     goto genIfL;
                 }
             }
         }
     }
     genIfL:
-        genIfExpr(1, lableNum+lableCount-1);
+        genIfExpr(1, lableNum+lableCount-1, index);
 }

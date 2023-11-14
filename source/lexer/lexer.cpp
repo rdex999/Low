@@ -25,6 +25,18 @@ std::vector<token> lexer::createTokens()
             else if(buffer == "int"){
                 tokens.push_back(token{.type = tokenType::_int});
             }
+            
+            else if(buffer == "char"){
+                tokens.push_back(token{.type = tokenType::_char});
+            }
+
+            else if(buffer == "ptr"){
+                tokens.push_back(token{.type = tokenType::ptr});
+            }
+            
+            else if(buffer == "while"){
+                tokens.push_back(token{.type = tokenType::_while});
+            }
 
             else if(buffer == "if"){
                 tokens.push_back(token{.type = tokenType::_if});
@@ -46,13 +58,6 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_or});
             }
 
-            else if(buffer == "ptr"){
-                tokens.push_back(token{.type = tokenType::ptr});
-            }
-
-            else if(buffer == "char"){
-                tokens.push_back(token{.type = tokenType::_char});
-            }
 
             else{
                 tokens.push_back(token{.type = tokenType::ident, .value = buffer});

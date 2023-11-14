@@ -9,6 +9,7 @@
 #include "ident/ident.h"
 #include "char/char.h"
 #include "functions/functions.h"
+#include "while/while.h"
 
 genAsm::genAsm(const node::program* prog, bool lowStdLib)
 {
@@ -76,43 +77,47 @@ void genAsm::genStmt()
         genIf();
         break;
 
+    case tokenType::_while:
+        genWhile();
+        break;
+
     default:
         break;
     }
 }
 
-int genAsm::genSingle(int idx, const char* reg)
+int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
 {
     int retIdx = idx;
 
-    if(prog->sts.at(index).vals.size() > retIdx + 1 &&
-        (prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::pp ||
-        prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::mm))
+    if(prog->sts.at(stmtIdx).vals.size() > retIdx + 1 &&
+        (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::pp ||
+        prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mm))
     {
         retIdx = genPostIncDec(retIdx, reg);
         goto checkMulDiv;
 
-    }else if(prog->sts.at(index).vals.at(retIdx).type == tokenType::pp ||
-        prog->sts.at(index).vals.at(retIdx).type == tokenType::mm)
+    }else if(prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::pp ||
+        prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::mm)
     {
         retIdx = genPreIncDec(retIdx, reg);
         goto checkMulDiv;
     }
 
-    switch (prog->sts.at(index).vals.at(retIdx).type)
+    switch (prog->sts.at(stmtIdx).vals.at(retIdx).type)
     {
     case tokenType::intLit:
-        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
+        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
         break;
 
     case tokenType::quote:
-        outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(index).vals.at(retIdx).value << "\n\t";
+        outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
         break;
 
     case tokenType::dQoute:{
         std::string textName = createTextVarName();
         secData << "\n\t" << textName <<
-            " db " << handleSpecialChar(&prog->sts.at(index).vals.at(retIdx).value) << ", 0";
+            " db " << handleSpecialChar(&prog->sts.at(stmtIdx).vals.at(retIdx).value) << ", 0";
 
         outAsm << "mov rdi, " << textName << "\n\t";
         break;
@@ -120,7 +125,7 @@ int genAsm::genSingle(int idx, const char* reg)
 
     case tokenType::ident:{
 
-        var* v = (var*)varAccessible(&(prog->sts.at(index).vals.at(retIdx).value), scopeStackLoc.size());
+        var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(retIdx).value), scopeStackLoc.size());
 
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
             " [rsp + " << (int)(v->stackLoc) << "]\n\t";
@@ -129,8 +134,8 @@ int genAsm::genSingle(int idx, const char* reg)
     }
 
     case tokenType::singleAnd:{
-        if(retIdx+1 < prog->sts.at(index).vals.size()){
-            var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
+        if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
+            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
 
             outAsm << "lea " << selectReg(reg, 8) << ", [rsp + " << v->stackLoc << "]\n\t";
 
@@ -142,16 +147,16 @@ int genAsm::genSingle(int idx, const char* reg)
     }
 
     case tokenType::mul:{ // treating start as a pointer here
-        if(retIdx+1 < prog->sts.at(index).vals.size()){
+        if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
 
-            if(retIdx+2 < prog->sts.at(index).vals.size() &&
-                (prog->sts.at(index).vals.at(retIdx+2).type == tokenType::mm ||
-                prog->sts.at(index).vals.at(retIdx+2).type == tokenType::pp))
+            if(retIdx+2 < prog->sts.at(stmtIdx).vals.size() &&
+                (prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::mm ||
+                prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::pp))
             {
                 retIdx = genPostIncDec(retIdx, reg);
 
             }else{
-                var* v = (var*)varAccessible(&prog->sts.at(index).vals.at(++retIdx).value, scopeStackLoc.size());
+                var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
                 outAsm << "mov " << selectReg("rbx", v->size) <<
                     ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
 
@@ -182,16 +187,16 @@ int genAsm::genSingle(int idx, const char* reg)
 
     checkMulDiv:
 
-    if(prog->sts.at(index).vals.size() > retIdx + 1 && 
-        (prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::mul ||
-        prog->sts.at(index).vals.at(retIdx + 1).type == tokenType::div))
+    if(prog->sts.at(stmtIdx).vals.size() > retIdx + 1 && 
+        (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mul ||
+        prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::div))
     {
         bool isRax = true;
         if(std::string("rax") != reg){
             outAsm << "mov rax, " << reg << "\n\t";
             isRax = false; 
         }
-        retIdx = genMulDiv(retIdx + 1);
+        retIdx = genMulDiv(retIdx + 1, index);
         if(!isRax){
             outAsm << "mov " << reg << ", rax\n\t";
         }
@@ -209,7 +214,7 @@ inline void genAsm::genExit()
     if(prog->sts.at(index).vals.at(1).type == tokenType::intLit && prog->sts.at(index).vals.size() == 2){
         outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(1).value << "\n\tsyscall\n\t";
     }else{
-        genExpr(1);
+        genExpr(index, 1);
         outAsm << "mov rax, 60\n\t";
         outAsm << "syscall\n\t";
     }

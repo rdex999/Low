@@ -61,17 +61,17 @@ class genAsm
 
         // the final value is in RDX
         // @returns {int} the index of i. used when there are parenthesis
-        int genExpr(int valsIdx = 0);
+        int genExpr(size_t stmtIdx, int valsIdx = 0);
 
         // the result is in RAX
         // @returns {int} the index
-        int genMulDiv(int from);
+        int genMulDiv(int from, size_t stmtIdx);
         
         // @returns {int} the index 
         // @param {const char*} reg
-        int genSingle(int idx, const char* reg);
+        int genSingle(int idx, const char* reg, size_t stmtIdx);
 
-        int genIfExpr(int from, int lable);
+        int genIfExpr(int from, int lable, size_t stmtIdx, bool invert = false, bool handleCurly = true);
 
         inline void genExit();
         inline void genInt(int idx = 0);
@@ -82,4 +82,5 @@ class genAsm
         inline int genPostIncDec(int idx, const char* reg = nullptr);
         inline void genIf();
         inline int genFunctionCall(int idx);
+        inline void genWhile(int idx = 0);
 };
