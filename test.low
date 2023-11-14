@@ -1,4 +1,6 @@
 int x = 0;
-while x < 1000000000{
+while x < 10{
+    printChar(x+48);
+    printChar('\n');
     ++x;
 }

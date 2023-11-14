@@ -3,33 +3,39 @@
 
 inline void genAsm::genWhile(int idx)
 {
-    size_t whileIdx = index;
-    size_t lableIdx = lableNum;
-    outAsm << "\r.L" << lableNum++ << ":\n\t";
-    
+    size_t orgLable = lableNum, orgStmtIdx = index;
+
     size_t lableCount = 0, curlyCount = 0;
-    for(; index<prog->sts.size(); ++index){
-        for(int i=idx; i<prog->sts.at(index).vals.size(); ++i){
-            if(prog->sts.at(index).vals.at(i).type == tokenType::curlyOpen){
+    size_t indexCopy = index;
+    for(; indexCopy < prog->sts.size(); ++indexCopy){
+        for(int i=0; i<prog->sts.at(indexCopy).vals.size(); ++i){
+            if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::curlyOpen){
                 ++curlyCount;
-                if(whileIdx == index){
+                if(indexCopy == index){
                     genCurly(i);
                 }
-            }else if(prog->sts.at(index).vals.at(i).type == tokenType::_while){
+            }else if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::_while){
                 lableCount += 2;
-            }else if(prog->sts.at(index).vals.at(i).type == tokenType::curlyClose){
+            }else if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::curlyClose){
                 --curlyCount;
                 ++lableCount;
                 if(!curlyCount){
-                    outAsm << "\r.L" << lableNum++ << ":\n\t";
-                    genIfExpr(1, lableIdx, whileIdx, true, false);
-                    genCurly(i);
-                    return;                    
+                    goto afterLableCounted;
                 }
             }
         }
-        if(index != whileIdx){
+    }
+    afterLableCounted:
+        outAsm << "jmp .L"  << lableNum + lableCount - 2 << "\n\t";
+        outAsm << "\r.L" << lableNum++ << ":\n\t";
+        for(++index; index<prog->sts.size(); ++index){
+            if(index >= indexCopy){
+                outAsm << "\r.L" << lableNum++ << ":\n\t";
+                genIfExpr(1, orgLable, orgStmtIdx, true, false);
+                genStmt();
+                break;
+            }
             genStmt();
         }
-    }
+
 }
