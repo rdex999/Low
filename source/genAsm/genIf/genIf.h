@@ -80,6 +80,9 @@ inline void genAsm::genIf()
                 --curlyCount; 
                 ++lableCount;
                 if(curlyCount == 0){
+                    //if(i+2 < prog->sts.size() && prog->sts.at(i+1).vals.at(0).type == tokenType::elseIf){
+                    //    break;
+                    //}
                     goto genIfL;
                 }
             }

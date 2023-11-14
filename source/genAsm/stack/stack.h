@@ -23,7 +23,8 @@ inline void genAsm::genCurly(int idx, bool isFromElse)
         stackLoc = scopeStackLoc.at(scopeStackLoc.size() - 1);
         scopeStackLoc.pop_back();
 
-        if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type == tokenType::_else){
+        if(index + 1 < prog->sts.size() && prog->sts.at(index+1).vals.at(0).type != tokenType::_if)
+        {
             size_t curlyCount = 0, lableCount = 0;
             for(size_t i = index+1; i<prog->sts.size(); ++i){
                 for(int j=0; j<prog->sts.at(i).vals.size(); ++j){
@@ -33,6 +34,9 @@ inline void genAsm::genCurly(int idx, bool isFromElse)
                         --curlyCount;
                         ++lableCount;
                         if(curlyCount == 0){
+                            if(i+1 < prog->sts.size() && prog->sts.at(i+1).vals.at(0).type != tokenType::_if){
+                                break;
+                            }
                             goto jmpL;
                         }
                     }

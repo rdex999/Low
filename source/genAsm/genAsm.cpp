@@ -72,6 +72,7 @@ void genAsm::genStmt()
 
     case tokenType::_if:
     case tokenType::_else:
+    case tokenType::elseIf:
         genIf();
         break;
 

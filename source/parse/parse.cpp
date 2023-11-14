@@ -41,12 +41,17 @@ inline void parse::parseSt(const token* t)
 
         default:
             st.vals.push_back(tokens->at(index));
-            if(index+1 < tokens->size() && tokens->at(index).type == tokenType::_else &&
-                tokens->at(index+1).type == tokenType::curlyOpen)
-            {
-                st.vals.push_back(tokens->at(++index));
-                prog.sts.push_back(st);
-                return;
+            if(index + 1 < tokens->size()){
+                if(tokens->at(index).type == tokenType::_else &&
+                    tokens->at(index+1).type == tokenType::curlyOpen)
+                {
+                    st.vals.push_back(tokens->at(++index));
+                    prog.sts.push_back(st);
+                    return;
+                }else if(tokens->at(index).type == tokenType::_else && tokens->at(index+1).type == tokenType::_if){
+                    st.vals.at(st.vals.size() - 1).type = tokenType::elseIf;
+                    ++index;
+                }
             }
             break;
         }
