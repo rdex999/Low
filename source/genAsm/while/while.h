@@ -14,9 +14,11 @@ inline void genAsm::genWhile(int idx)
                 if(indexCopy == index){
                     genCurly(i);
                 }
-            }else if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::_while){
+            }
+            if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::_while){
                 lableCount += 2;
-            }else if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::curlyClose){
+            }
+            if(prog->sts.at(indexCopy).vals.at(i).type == tokenType::curlyClose){
                 --curlyCount;
                 ++lableCount;
                 if(!curlyCount){

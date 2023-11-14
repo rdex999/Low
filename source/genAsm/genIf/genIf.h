@@ -119,6 +119,8 @@ inline void genAsm::genIf()
                 if(curlyCount == 0){
                     goto genIfL;
                 }
+            }else if(prog->sts.at(i).vals.at(j).type == tokenType::_while){
+                lableCount += 2;
             }
         }
     }
