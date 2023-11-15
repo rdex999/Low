@@ -26,6 +26,8 @@ enum class tokenType
     parenClose, // )
     curlyOpen, // {
     curlyClose, // }
+    bracketOpen, // [
+    bracketClose, // ]
     _while,
     _break, 
     _if,

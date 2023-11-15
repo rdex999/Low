@@ -2,8 +2,33 @@
 
 inline void genAsm::genChar(int idx)
 {
+    size_t arrSize = 0;
+    bool isArr = false;
     if(prog->sts.at(index).vals.size() > idx + 1){
         for(int i = 0; i < prog->sts.at(index).vals.size(); ++i){
+            if(prog->sts.at(index).vals.at(i).type == tokenType::bracketOpen){
+                if(i+1<prog->sts.at(index).vals.size()){
+                    isArr = true; 
+                    if(prog->sts.at(index).vals.at(i+1).type == tokenType::intLit){
+                        if(i+2 < prog->sts.at(index).vals.size() && prog->sts.at(index).vals.at(i+2).type == tokenType::bracketClose){
+                            arrSize = std::stoi(prog->sts.at(index).vals.at(i+1).value);
+                        }else{
+                            std::cerr << "Error, array declaration with an expresion is currently not supported." << std::endl;
+                            exit(1);
+                        }
+                    }else if(prog->sts.at(index).vals.at(i+1).type == tokenType::bracketClose){ // char[] = ....;
+
+                    }else{
+                        std::cerr << "Error, an array must be declared with a constant expresion. ( char[10] s; )" << std::endl;
+                        exit(1);
+                    }
+
+                }else{
+                    std::cerr << "Error, invalid syntax. (forgot closing bracket?)" << std::endl;
+                    exit(1);
+                }
+            }
+
             if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
                 if(varInScope(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size())){
                     std::cerr << "Error, identifier '" <<
@@ -13,7 +38,7 @@ inline void genAsm::genChar(int idx)
                 }
                 
                 var v = {.stackLoc = stackLoc, .size = 1, .scope = (int)scopeStackLoc.size()};
-                if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr){
+                if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr || isArr){
                     v.ptrReadBytes = 1;
                     v.size = 8;
                 }
@@ -31,7 +56,13 @@ inline void genAsm::genChar(int idx)
                         exit(1);
                     }
                 }else{ // char ch;
-                    stackLoc += v.size;
+                    if(isArr){
+                        outAsm << "lea rax, [rsp + " << stackLoc + 8 << "]\n\t";
+                        push("rax", 8);
+                        stackLoc += arrSize;
+                    }else{
+                        stackLoc += v.size;
+                    }
                 }
             }
         }

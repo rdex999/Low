@@ -1,14 +1,7 @@
-int x = 0;
-while x < 10{
-    printChar(x+48);
-    printChar(10);
-    printChar(10);
-    int c = 0;
-    while c < 7{
-        printChar(c+48);
-        printChar(10);
-        ++c;
-    }
-    printChar(10);
-    ++x;
-}
+char[10] s;
+* (s) = 'a';
+* (s+1) = 'c';
+* (s+2) = 'b';
+* (s+3) = '\n';
+* (s+4) = 0;
+printStr(s);

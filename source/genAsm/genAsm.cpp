@@ -173,7 +173,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
     }
 
     case tokenType::parenOpen:
-        retIdx = genExpr(retIdx + 1);
+        retIdx = genExpr(stmtIdx, retIdx + 1);
         if((std::string)reg != "rdi"){
             outAsm << "mov " << reg << ", rdi\n\t";
         }

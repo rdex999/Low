@@ -302,6 +302,14 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::bNot});
             }
 
+            else if(buffer == "["){
+                tokens.push_back(token{.type = tokenType::bracketOpen});
+            }
+
+            else if(buffer == "]"){
+                tokens.push_back(token{.type = tokenType::bracketClose});
+            }
+
             else{
                 std::cerr << "Error, not a valid operator '" << buffer << "'." << std::endl;
                 exit(1);
