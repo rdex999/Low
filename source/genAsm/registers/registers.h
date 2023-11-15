@@ -44,6 +44,9 @@ std::string genAsm::selectWord(int size)
 
     case 2:
         return "WORD";
+    
+    case 1:
+        return "BYTE";
 
     default:
         return "";
