@@ -86,18 +86,19 @@ void genAsm::genStmt()
     }
 }
 
-int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
+int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec, bool ifPtrGetPValue)
 {
     int retIdx = idx;
+    int oprSize = -1;
 
-    if(prog->sts.at(stmtIdx).vals.size() > retIdx + 1 &&
+    if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.size() > retIdx + 1 &&
         (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::pp ||
         prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mm))
     {
         retIdx = genPostIncDec(retIdx, reg);
         goto checkMulDiv;
 
-    }else if(prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::pp ||
+    }else if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::pp ||
         prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::mm)
     {
         retIdx = genPreIncDec(retIdx, reg);
@@ -126,7 +127,9 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
     case tokenType::ident:{
 
         var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(retIdx).value), scopeStackLoc.size());
-
+        if(oprSize == -1){
+            oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
+        }
         outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
             " [rsp + " << (int)(v->stackLoc) << "]\n\t";
 
@@ -136,6 +139,9 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
     case tokenType::singleAnd:{
         if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
             var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
+            if(oprSize == -1){
+                oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
+            }
 
             outAsm << "lea " << selectReg(reg, 8) << ", [rsp + " << v->stackLoc << "]\n\t";
 
@@ -157,6 +163,10 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
 
             }else{
                 var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
+                if(oprSize != -1){
+                    oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
+                }
+
                 outAsm << "mov " << selectReg("rbx", v->size) <<
                     ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
 
@@ -199,6 +209,30 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx)
         retIdx = genMulDiv(retIdx + 1, index);
         if(!isRax){
             outAsm << "mov " << reg << ", rax\n\t";
+        }
+    }
+
+    if(retIdx + 1 < prog->sts.at(stmtIdx).vals.size() &&
+        prog->sts.at(stmtIdx).vals.at(retIdx+1).type == tokenType::bracketOpen)
+    {
+        if(oprSize == -1){
+            std::cerr << "Error, must specify data type to use index operator ( [] ).\nNote: You can do this \"*(var+offset)\"" << std::endl;
+            exit(1);
+        }
+
+        push(reg, 8);
+        retIdx = genExpr(stmtIdx, retIdx+2);
+        pop("rax", 8);
+        outAsm << "add rax, rdi\n\t";
+        if(oprSize != 1){
+            outAsm << "mov rcx, " << oprSize << "\n\t";
+            outAsm << "mul QWORD rcx\n\t";
+        }
+        if(reg != (std::string)"rax"){
+            outAsm << "mov " << reg << ", rax\n\t";
+        }
+        if(ifPtrGetPValue){
+            outAsm << "mov " << reg << ", [" << reg << "]\n\t";
         }
     }
     return retIdx;

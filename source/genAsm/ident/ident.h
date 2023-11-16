@@ -4,42 +4,85 @@ inline void genAsm::genUpdateIdent()
 {
     var* v = nullptr;
     int identIdx = -1;
+    int operatorIdx = -1;
     bool ptr = false;
 
-    if(prog->sts.at(index).vals.at(0).type == tokenType::mul){
-        ptr = true;
-        identIdx = genSingle(1, "rbx", index);
-        if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm  &&
-            prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp)
-        {
-            push("rbx", 8);
-            genExpr(index, identIdx+2);
-            pop("rbx", 8);
-        }
+    //if(prog->sts.at(index).vals.at(0).type == tokenType::mul){
+    //    ptr = true;
+    //    identIdx = genSingle(1, "rbx", index);
+    //    if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm  &&
+    //        prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp)
+    //    {
+    //        push("rbx", 8);
+    //        genExpr(index, identIdx+2);
+    //        pop("rbx", 8);
+    //    }
+//
+    //}else if(prog->sts.at(index).vals.at(0).type == tokenType::ident){
+    //    if(prog->sts.at(index).vals.at(1).type == tokenType::parenOpen){ // if is a function call
+    //        genFunctionCall(0);
+    //        return;
+    //    }
+//
+    //    identIdx = 0;
+    //    if(prog->sts.at(index).vals.at(1).type != tokenType::mm  &&
+    //        prog->sts.at(index).vals.at(1).type != tokenType::pp)
+    //    {
+    //        genExpr(index, 2);
+    //    }
+    //}
+ //
+    //for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
+    //    if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
+    //        v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+    //        break;
+    //    }
+    //}
 
-    }else if(prog->sts.at(index).vals.at(0).type == tokenType::ident){
-        if(prog->sts.at(index).vals.at(1).type == tokenType::parenOpen){ // if is a function call
-            genFunctionCall(0);
-            return;
-        }
-
-        identIdx = 0;
-        if(prog->sts.at(index).vals.at(1).type != tokenType::mm  &&
-            prog->sts.at(index).vals.at(1).type != tokenType::pp)
-        {
-            genExpr(index, 2);
-        }
-    }
- 
     for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
-        if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
-            v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+        if(prog->sts.at(index).vals.at(i).type >= tokenType::equal && // assignment operator
+            prog->sts.at(index).vals.at(i).type <= tokenType::mm)
+        {
+            operatorIdx = i;
+            if(prog->sts.at(index).vals.at(i).type != tokenType::pp &&
+                prog->sts.at(index).vals.at(i).type != tokenType::mm)
+            {
+                genExpr(index, i+1);
+            }
             break;
         }
+        if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
+
+            if(i+1 < prog->sts.at(index).vals.size() &&
+                prog->sts.at(index).vals.at(i+1).type == tokenType::parenOpen) // function call
+            {
+                genFunctionCall(i);
+                return;
+            }
+            if(identIdx == -1){
+                identIdx = i;
+                v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
+                if((i+1 < prog->sts.at(index).vals.size() &&    // index operator []
+                    prog->sts.at(index).vals.at(i+1).type == tokenType::bracketOpen) || 
+                    prog->sts.at(index).vals.at(i).type == tokenType::mul) // pointer
+                {
+                    ptr = true;
+                    i = genSingle(i, "rbx", index, false, false);
+                }
+            }
+        }
+    }
+    if(operatorIdx == -1){
+        std::cerr << "Error, identifier '" << prog->sts.at(index).vals.at(identIdx).value << "' has not effect on this line." << std::endl;
+        exit(1);
+    }
+    if(!v){
+        std::cerr << "Error, cannot change an rvalue." << std::endl;
+        exit(1);
     }
 
             // the operator, = += -= *= /= 
-    switch (prog->sts.at(index).vals.at(identIdx+1).type)
+    switch (prog->sts.at(index).vals.at(operatorIdx).type)
     {
     case tokenType::equal:
         if(ptr){

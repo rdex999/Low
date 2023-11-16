@@ -102,6 +102,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
         case tokenType::_and:
         case tokenType::_or:
         case tokenType::curlyOpen:
+        case tokenType::bracketClose:
             return valsIdx;
 
 

@@ -1,11 +1,7 @@
 char[50] buffer;
-int i = 0;
-char ch = 'a';
-while ch <= 'z'{
-    * (buffer + i) = ch;
-    ++ch;
-    ++i;
-}
-* (buffer + 'z' - 'a' + 1) = 10;
-* (buffer + 'z' - 'a' + 2 ) = 0;
+buffer[0] = 'a';
+buffer[1] = 'b';
+buffer[2] = 'c';
+buffer[3] = '\n';
+buffer[4] = 0;
 printStr(buffer);
