@@ -1,7 +1,4 @@
-char[50] buffer;
-buffer[0] = 'a';
-buffer[1] = 'b';
-buffer[2] = 'c';
-buffer[3] = '\n';
-buffer[4] = 0;
-printStr(buffer);
+int[10] xs;
+xs[0] = 20;
+xs[1] = 40;
+exit xs[1];

@@ -222,17 +222,15 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
         push(reg, 8);
         retIdx = genExpr(stmtIdx, retIdx+2);
-        pop("rax", 8);
-        outAsm << "add rax, rdi\n\t";
+        outAsm << "mov rax, rdi\n\t";
         if(oprSize != 1){
             outAsm << "mov rcx, " << oprSize << "\n\t";
-            outAsm << "mul QWORD rcx\n\t";
+            outAsm << "mul rcx\n\t";
         }
-        if(reg != (std::string)"rax"){
-            outAsm << "mov " << reg << ", rax\n\t";
-        }
+        pop(reg, 8);
+        outAsm << "add " << reg << ", rax\n\t";
         if(ifPtrGetPValue){
-            outAsm << "mov " << reg << ", [" << reg << "]\n\t";
+            outAsm << "mov " << selectReg(reg, oprSize) << ", " << selectWord(oprSize) << " [" << reg << "]\n\t";
         }
     }
     return retIdx;
