@@ -12,6 +12,9 @@ low main.low -o main
 Every statement MUST end with a semicolon ( ; ) \
 Usualy if you miss a semicolon the compiler will throw an error, but it might not, and can just generate bad code. (will be fixed in the future)
 
+# Contributing
+As this languege is currently in development, i will not accept pull requests
+
 ## Variables
 there are currently 2 types of variables, int, and char \
 You can declare variables with, or without a value. \
