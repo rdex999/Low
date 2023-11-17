@@ -7,38 +7,6 @@ inline void genAsm::genUpdateIdent()
     int operatorIdx = -1;
     bool ptr = false;
 
-    //if(prog->sts.at(index).vals.at(0).type == tokenType::mul){
-    //    ptr = true;
-    //    identIdx = genSingle(1, "rbx", index);
-    //    if(prog->sts.at(index).vals.at(identIdx+1).type != tokenType::mm  &&
-    //        prog->sts.at(index).vals.at(identIdx+1).type != tokenType::pp)
-    //    {
-    //        push("rbx", 8);
-    //        genExpr(index, identIdx+2);
-    //        pop("rbx", 8);
-    //    }
-//
-    //}else if(prog->sts.at(index).vals.at(0).type == tokenType::ident){
-    //    if(prog->sts.at(index).vals.at(1).type == tokenType::parenOpen){ // if is a function call
-    //        genFunctionCall(0);
-    //        return;
-    //    }
-//
-    //    identIdx = 0;
-    //    if(prog->sts.at(index).vals.at(1).type != tokenType::mm  &&
-    //        prog->sts.at(index).vals.at(1).type != tokenType::pp)
-    //    {
-    //        genExpr(index, 2);
-    //    }
-    //}
- //
-    //for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
-    //    if(prog->sts.at(index).vals.at(i).type == tokenType::ident){
-    //        v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
-    //        break;
-    //    }
-    //}
-
     for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
         if(prog->sts.at(index).vals.at(i).type >= tokenType::equal && // assignment operator
             prog->sts.at(index).vals.at(i).type <= tokenType::mm)
@@ -70,6 +38,23 @@ inline void genAsm::genUpdateIdent()
                     i = genSingle(i, "rbx", index, false, false);
                 }
             }
+        }
+        if(prog->sts.at(index).vals.at(i).type == tokenType::mul){
+            for(int j=i; j<prog->sts.at(index).vals.size(); ++j){
+                if(prog->sts.at(index).vals.at(j).type >= tokenType::equal &&
+                    prog->sts.at(index).vals.at(j).type <= tokenType::mm)
+                {
+                    std::cerr << "Error, unknown oparation size. Try casting to a type." << std::endl;
+                    exit(1);
+                    break;
+                }
+                if(prog->sts.at(index).vals.at(j).type == tokenType::ident){
+                    v = (var*)varAccessible(&prog->sts.at(index).vals.at(j).value, scopeStackLoc.size());
+                    break;
+                }
+            }
+            ptr = true;
+            i = genSingle(i+1, "rbx", index, false, false);
         }
     }
     if(operatorIdx == -1){
