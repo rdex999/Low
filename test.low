@@ -1,6 +1,6 @@
-int[10] x;
-x[0] = 23523;
-* (x+4) = 326225; // x[1]
-x[2] = 2395623;
-printNum(x[1] );
-printChar('\n');
+int i = 0;
+while i < 30{
+    printNum(i);
+    printChar('\n');
+    i++;
+}
