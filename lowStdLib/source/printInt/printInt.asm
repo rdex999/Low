@@ -1,12 +1,12 @@
 bits 64
 
 section .text
-    global printNum
+    global printInt
 
-; prints a number to stdout.
-; argument 0: the number to print (rdi)
+; prints an integer to stdout.
+; argument 0: the integer to print (rdi)
 ; argument 1: (given by the compiler) the current location on the stack. (rsi)
-printNum:
+printInt:
     add rsi, 10 ; alloc 10 bytes 
     mov rax, rdi
     xor rcx, rcx

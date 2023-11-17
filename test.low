@@ -1,6 +1,6 @@
 int i = 0;
 while i < 30{
-    printNum(i);
+    printInt(i);
     printChar('\n');
     i++;
 }

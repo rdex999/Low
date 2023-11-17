@@ -22,7 +22,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     if(lowStdLib){
         addStdLibFunc("printStr");
         addStdLibFunc("printChar", "rsi");
-        addStdLibFunc("printNum", "rsi");
+        addStdLibFunc("printInt", "rsi");
     }
 
 

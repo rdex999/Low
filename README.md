@@ -50,8 +50,8 @@ Usage: \
 `printStr("Hello, world!\n");` \
 You can also print a single character with the printChar function, example: \
 `printChar('a');` \
-And for printing numbers use the function printNum, example: \
-`printNum(2345);`
+And for printing integers use the function printInt, example: \
+`printInt(2345);`
 
 ### stderr
 Currently not supported.
