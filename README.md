@@ -9,7 +9,7 @@ low main.low -o main
 ```
 
 # Contributing
-As this languege is currently in development, i will not accept pull requests
+As this languege is currently in development, I will not accept pull requests.
 
 # Syntax
 Every statement MUST end with a semicolon ( ; ) \
