@@ -20,13 +20,9 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     outAsm << "\n\n_start:\n\t";
     
     if(lowStdLib){
-        vars.insert({"printStr", var{.stackLoc = 0, .size = -1,
-            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true}});
-        secText << "\n\textern printStr";
-
-        vars.insert({"printChar", var{.stackLoc = 0, .size = -1,
-            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true, .stackLocReg = "rsi"}});
-        secText << "\n\textern printChar";
+        addStdLibFunc("printStr");
+        addStdLibFunc("printChar", "rsi");
+        addStdLibFunc("printNum", "rsi");
     }
 
 
@@ -38,6 +34,13 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
 
     finalAsm << secData.str() << secText.str() << outAsm.str();
+}
+
+inline void genAsm::addStdLibFunc(const char* funcName, const char* stackReg)
+{
+    vars.insert({funcName, var{.stackLoc = 0, .size = -1,
+            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true, .stackLocReg = stackReg}});
+        secText << (std::string)"\n\textern " + funcName;
 }
 
 void genAsm::genStmt()

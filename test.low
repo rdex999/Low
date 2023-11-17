@@ -1,4 +1,23 @@
-int[10] xs;
-xs[0] = 20;
-xs[1] = 40;
-exit xs[1];
+int[10] x;
+x[0] = 235221;
+x[1] = 73426223;
+x[2] = 400;
+x[3] = 6785929;
+int i = 0;
+while i < 4{
+    if i is 2 {
+        printStr("on idx 2\n");
+        if x[i] is 400{
+            printStr("found 400!\n");
+        }else{
+            printStr("not 400\n");
+        }
+    }else{
+        printNum(x[i] );
+        printChar(' ');
+        int num = 2352362; // test
+        printNum(num);
+        printChar('\n');
+    }
+    ++i;
+}

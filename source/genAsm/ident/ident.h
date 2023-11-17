@@ -64,7 +64,7 @@ inline void genAsm::genUpdateIdent()
                 v = (var*)varAccessible(&prog->sts.at(index).vals.at(i).value, scopeStackLoc.size());
                 if((i+1 < prog->sts.at(index).vals.size() &&    // index operator []
                     prog->sts.at(index).vals.at(i+1).type == tokenType::bracketOpen) || 
-                    prog->sts.at(index).vals.at(i).type == tokenType::mul) // pointer
+                    (i-1 >= 0 && prog->sts.at(index).vals.at(i-1).type == tokenType::mul)) // pointer
                 {
                     ptr = true;
                     i = genSingle(i, "rbx", index, false, false);

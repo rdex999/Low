@@ -39,6 +39,8 @@ class genAsm
         size_t stackLoc = 0;
         size_t lableNum = 0;
 
+        inline void addStdLibFunc(const char* funcName, const char* stackReg = nullptr);
+
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
         void* varInScope(const std::string* varName, int scope);
