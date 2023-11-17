@@ -26,16 +26,16 @@ Example: `int x;`
 Integers are 4 bytes, and are used to store numbers. \
 Examples: \
 `int x;` \
-`int x = 10;` \
+`int x = 10;` 
 
 #### char
 char, in short for character is one byte and can store a single character. \
 Examples: \
 `char ch;` \
-`char ch = 'a';` \
+`char ch = 'a';` 
 
 ### Arrays
-You can use arrays for each type, examples: \
+You can use arrays for each type, examples: 
 ```
 int[10] myArr;
 myArr[0] = 35211;
@@ -43,7 +43,7 @@ myArr[1] = 683242;
 ```
 
 ## Printing
-There are function from the low standard library to print to the console, explained below. \
+There are function from the low standard library to print to the console, explained below.
 ### stdout
 You can print a string to stdout using the printStr function. \
 Usage: \
@@ -59,7 +59,7 @@ Currently not supported.
 ## If statements
 is statements are supported, with all basic boolean operators (==, !=, <, >, <=, >=) \
 Btw, you can use the "is" keyword instead of the == operator. \
-Examples: \
+Examples:
 ```
 if 5 is 5{
     printStr("true\n");
@@ -71,7 +71,7 @@ if 5 >= 2{
 }
 ```
 ### else
-You can use else with an if statement, examples: \
+You can use else with an if statement, examples:
 ```
 if 4 is 5{
     printStr("4 is 5\n");
@@ -81,7 +81,7 @@ if 4 is 5{
 ```
 
 ### else if
-You can use else if with an if statement, examples: \
+You can use else if with an if statement, examples:
 ```
 if 4 is 5{
     printStr("4 is 5\n");
@@ -93,7 +93,7 @@ if 4 is 5{
 ```
 
 ## Loops
-currently only while loops are supported, there will be more in the future. \
+currently only while loops are supported, there will be more in the future.
 ### while
 syntax: `while <condition> { code; }` \
 Example:
