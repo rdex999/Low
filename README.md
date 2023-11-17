@@ -44,7 +44,7 @@ There are function from the low standard library to print to the console, explai
 ### stdout
 You can print a string to stdout using the printStr function. \
 Usage: \
-`printStr("Hello, world!\n");`
+`printStr("Hello, world!\n");` \
 You can also print a single character with the printChar function, example: \
 `printChar('a');` \
 And for printing numbers use the function printNum, example: \
