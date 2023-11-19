@@ -18,7 +18,7 @@ Usualy if you miss a semicolon the compiler will throw an error, but it might no
 ## Variables
 there are currently 2 types of variables, int, and char \
 You can declare variables with, or without a value. \
-Nnote that when declaring a variable without a value it will have the old value that wa used by other programs in that location. \
+Note that when declaring a variable without a value it will have the old value that was used by other programs in that location. \
 Usage: `type varName;` \
 Example: `int x;`
 
@@ -57,7 +57,7 @@ And for printing integers use the function printInt, example: \
 Currently not supported.
 
 ## If statements
-is statements are supported, with all basic boolean operators (==, !=, <, >, <=, >=) \
+if statements are supported, with all basic boolean operators (==, !=, <, >, <=, >=) \
 Btw, you can use the "is" keyword instead of the == operator. \
 Examples:
 ```
