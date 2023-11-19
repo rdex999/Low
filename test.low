@@ -1,2 +1,5 @@
-printFloat32(10.123, 4);
-printChar('\n');
+if 10.123 is 10.123{
+    printStr("true\n");
+}else{
+    printStr("false\n");
+}

@@ -1,15 +1,15 @@
 #pragma once
 
-void genAsm::push(const char *reg, int size, const char *word)
+void genAsm::push(const char *reg, int size, const char *word, const char* mov)
 {
-    outAsm << "mov " << word << " [rsp + " << stackLoc << "], " << reg << "\n\t";
+    outAsm << mov << " " << word << " [rsp + " << stackLoc << "], " << reg << "\n\t";
     stackLoc += size;
 }
 
-void genAsm::pop(const char *reg, int size, const char* word)
+void genAsm::pop(const char *reg, int size, const char* word, const char* mov)
 {
     stackLoc -= size;
-    outAsm << "mov " << reg << ", " << word << "[rsp + " << stackLoc << "]\n\t";
+    outAsm << mov << " " << reg << ", " << word << "[rsp + " << stackLoc << "]\n\t";
 }
 
 inline void genAsm::genCurly(int idx, bool isFromElse)

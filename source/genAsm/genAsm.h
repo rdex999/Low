@@ -50,8 +50,8 @@ class genAsm
         // or nullptr if there is no such variable
         void* varAccessible(const std::string* varName, int scope);
         
-        void push(const char* reg, int size, const char* word = "");
-        void pop(const char* reg, int size, const char* word = "");
+        void push(const char* reg, int size, const char* word = "", const char* mov = "mov");
+        void pop(const char* reg, int size, const char* word = "", const char* mov = "mov");
 
         std::string selectReg(const char* reg, int size);
         std::string selectWord(int size);
@@ -66,7 +66,7 @@ class genAsm
 
         // the final value is in RDX
         // @returns {int} the index of i. used when there are parenthesis
-        int genExpr(size_t stmtIdx, int valsIdx = 0);
+        int genExpr(size_t stmtIdx, int valsIdx);
 
         // the result is in RAX
         // @returns {int} the index

@@ -1,8 +1,8 @@
 #pragma once
 
-
 int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool handleCurly)
 {
+    tokenType cmpType = tokenType::_int;
     for(; from<prog->sts.at(stmtIdx).vals.size(); ++from){
         switch (prog->sts.at(stmtIdx).vals.at(from).type)
         {
@@ -13,10 +13,17 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
             break;
 
         case tokenType::bEqual:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from+1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\t";
+            if(cmpType == tokenType::_int){
+                push("rdi", 8);
+                from = genExpr(stmtIdx, from+1) - 1;
+                pop("rbx", 8);
+                outAsm << "cmp rdi, rbx\n\t";
+            }else if(cmpType == tokenType::_float){
+                push("xmm0", 4, "", "movss");
+                from = genExpr(stmtIdx, from+1) - 1;
+                pop("xmm1", 4, "", "movss");
+                outAsm << "ucomiss xmm1, xmm0\n\t";
+            }
             if(invert){
                 outAsm << "je .L" << lable << "\n\t";
             }else{
@@ -85,6 +92,32 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
             break;
 
         default:
+            for(int i=from; i<prog->sts.at(stmtIdx).vals.size(); ++i){
+                switch (prog->sts.at(stmtIdx).vals.at(i).type)
+                {
+                case tokenType::_int:
+                case tokenType::intLit:
+                    cmpType = tokenType::_int; 
+                    goto afterCmpCheck;
+                    break;
+
+                case tokenType::_float:
+                case tokenType::floatLit:
+                    cmpType = tokenType::_float; 
+                    goto afterCmpCheck;
+                    break;
+
+                default:
+                    if(prog->sts.at(stmtIdx).vals.at(i).type >= tokenType::_or &&
+                        prog->sts.at(stmtIdx).vals.at(i).type <= tokenType::lEq)
+                    {
+                        std::cerr << "Error, unknows compare size. Try casting to somethig." << std::endl;
+                        exit(1);
+                    }
+                    break;
+                }
+            }
+            afterCmpCheck:
             from = genExpr(stmtIdx, from) - 1;
 
             // i might change this way of checking if this is a 'self check' (if x {...})
