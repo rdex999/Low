@@ -311,3 +311,19 @@ inline std::string genAsm::handleSpecialChar(const std::string* str)
     }
     return out;
 }
+
+inline int genAsm::getOprSize(size_t stmtIdx, int idx)
+{
+    for(; idx < prog->sts.at(stmtIdx).vals.size(); ++idx){
+        switch (prog->sts.at(stmtIdx).vals.at(idx).type)
+        {
+        case tokenType::ident:
+            return ((var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size()))->ptrReadBytes;
+            break;
+
+        default:
+            return -1;
+        }
+    }
+    return -1;
+}

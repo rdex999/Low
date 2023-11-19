@@ -1,5 +1,8 @@
-if 10.123 is 10.123{
-    printStr("true\n");
-}else{
-    printStr("false\n");
-}
+int x = 5000;
+int ptr y = &x;
+printInt(*y);
+printChar('\n');
+*y += 2431;
+*y++;
+printInt(*y);
+printChar('\n');

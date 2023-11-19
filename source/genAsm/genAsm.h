@@ -42,6 +42,9 @@ class genAsm
 
         inline void addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg = nullptr); 
 
+        // @returns the size to read from pointer. -1 for not found.
+        inline int getOprSize(size_t stmtIdx, int idx);
+
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
         void* varInScope(const std::string* varName, int scope);
