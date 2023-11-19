@@ -42,6 +42,13 @@ class genAsm
 
         inline void addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg = nullptr); 
 
+        // used in genIfExpr for comparing two things
+        int cmpTwo(size_t stmtIdx, int idx, tokenType cmpType);
+
+        // used in genIfExpr for comparing two things
+        // selects the appropriate jump instruction
+        std::string selectJump(tokenType cond, tokenType cmpType);
+
         // @returns the size to read from pointer. -1 for not found.
         inline int getOprSize(size_t stmtIdx, int idx);
 

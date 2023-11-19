@@ -13,17 +13,7 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
             break;
 
         case tokenType::bEqual:
-            if(cmpType == tokenType::_int){
-                push("rdi", 8);
-                from = genExpr(stmtIdx, from+1) - 1;
-                pop("rbx", 8);
-                outAsm << "cmp rdi, rbx\n\t";
-            }else if(cmpType == tokenType::_float){
-                push("xmm0", 4, "", "movss");
-                from = genExpr(stmtIdx, from+1) - 1;
-                pop("xmm1", 4, "", "movss");
-                outAsm << "ucomiss xmm1, xmm0\n\t";
-            }
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
                 outAsm << "je .L" << lable << "\n\t";
             }else{
@@ -32,10 +22,7 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
             break;
 
         case tokenType::bNotEq:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from + 1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rdi, rbx\n\t";
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
                 outAsm << "jne .L" << lable << "\n\t";
             }else{
@@ -44,50 +31,38 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
             break;
         
         case tokenType::g:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from + 1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\t";
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
-                outAsm << "jg .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::g, cmpType) << " .L" << lable << "\n\t";
             }else{
-                outAsm << "jle .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::lEq, cmpType) << " .L" << lable << "\n\t";
             }
             break;
         
         case tokenType::gEq:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from + 1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\t";
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
-                outAsm << "jge .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::gEq, cmpType) << " .L" << lable << "\n\t";
             }else{
-                outAsm << "jl .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::l, cmpType) << " .L" << lable << "\n\t";
             }
             break;
         
         case tokenType::l:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from + 1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\t";
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
-                outAsm << "jl .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::l, cmpType) << " .L" << lable << "\n\t";
             }else{
-                outAsm << "jge .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::gEq, cmpType) << " .L" << lable << "\n\t";
             }
             break;
         
         case tokenType::lEq:
-            push("rdi", 8);
-            from = genExpr(stmtIdx, from + 1) - 1;
-            pop("rbx", 8);
-            outAsm << "cmp rbx, rdi\n\t";
+            from = cmpTwo(stmtIdx, from, cmpType);
             if(invert){
-                outAsm << "jle .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::lEq, cmpType) << " .L" << lable << "\n\t";
             }else{
-                outAsm << "jg .L" << lable << "\n\t";
+                outAsm << selectJump(tokenType::g, cmpType) << " .L" << lable << "\n\t";
             }
             break;
 
@@ -126,7 +101,11 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
                 prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::curlyOpen ||
                 prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::parenClose)
             {
-                outAsm << "test rdi, rdi\n\t";
+                if(cmpType == tokenType::_int){
+                    outAsm << "test rdi, rdi\n\t";
+                }else if(cmpType == tokenType::_float){
+                    outAsm << "ptest xmm0, xmm0\n\t";
+                }
                 if(invert){
                     outAsm << "jnz .L" << lable << "\n\t";
                 }else{
@@ -137,6 +116,86 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
         }
     }
     return from;
+}
+
+int genAsm::cmpTwo(size_t stmtIdx, int idx, tokenType cmpType)
+{
+    switch (cmpType)
+    {
+    case tokenType::_int:
+        push("rdi", 8);
+        idx = genExpr(stmtIdx, idx+1) - 1;
+        pop("rbx", 8);
+        outAsm << "cmp rbx, rdi\n\t";
+        break;
+
+    case tokenType::_float:
+        push("xmm0", 4, "", "movss");
+        idx = genExpr(stmtIdx, idx+1) - 1;
+        pop("xmm1", 4, "", "movss");
+        outAsm << "ucomiss xmm1, xmm0\n\t";
+        break;
+
+    default:
+        break;
+    }
+    return idx;
+}
+
+std::string genAsm::selectJump(tokenType cond, tokenType cmpType)
+{
+    switch (cond)
+    {
+        case tokenType::g:
+            switch (cmpType){
+            case tokenType::_int:
+                return "jg";
+
+            case tokenType::_float:
+                return "ja";
+
+            default:
+                break;
+            } 
+            break;
+
+        case tokenType::gEq:
+            switch(cmpType){
+            case tokenType::_int:
+                return "jge";
+
+            case tokenType::_float:
+                return "jae";
+
+            default:
+                break;
+            }
+
+        case tokenType::l:
+            switch(cmpType){
+            case tokenType::_int:
+                return "jl";
+
+            case tokenType::_float:
+                return "jb";
+            }
+
+        case tokenType::lEq:
+            switch (cmpType){
+            case tokenType::_int:
+                return "jle";
+
+            case tokenType::_float:
+                return "jbe";
+
+            default:
+                break;
+            }
+
+        default:
+            break;
+    }
+    return "";
 }
 
 inline void genAsm::genIf()

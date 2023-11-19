@@ -1,8 +1,5 @@
-int x = 5000;
-int ptr y = &x;
-printInt(*y);
-printChar('\n');
-*y += 2431;
-*y++;
-printInt(*y);
-printChar('\n');
+if 0.1{
+    printStr("true\n");
+}else{
+    printStr("false\n");
+}
