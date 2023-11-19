@@ -66,10 +66,14 @@ std::vector<token> lexer::createTokens()
             continue;
 
         }else if(std::isdigit(src[index])){
-            while(index < src.size() && std::isdigit(src[index])){
+            tokenType tType = tokenType::intLit;
+            while(index < src.size() && (std::isdigit(src[index]) || src[index] == '.')){
+                if(src[index] == '.'){
+                    tType = tokenType::floatLit;
+                }
                 buffer += take();
             }
-            tokens.push_back(token{.type = tokenType::intLit, .value = buffer});
+            tokens.push_back(token{.type = tType, .value = buffer});
             buffer.clear();
             continue;
         }
@@ -308,6 +312,10 @@ std::vector<token> lexer::createTokens()
 
             else if(buffer == "]"){
                 tokens.push_back(token{.type = tokenType::bracketClose});
+            }
+
+            else if(buffer == ","){
+                tokens.push_back(token{.type = tokenType::comma});
             }
 
             else{

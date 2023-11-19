@@ -27,6 +27,7 @@ class genAsm
             bool isFunction = false;
             bool isExtern = false;
             const char* stackLocReg = nullptr; 
+            std::vector<tokenType> params;
         };
 
         std::vector<int> scopeStackLoc;
@@ -39,7 +40,7 @@ class genAsm
         size_t stackLoc = 0;
         size_t lableNum = 0;
 
-        inline void addStdLibFunc(const char* funcName, const char* stackReg = nullptr);
+        inline void addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg = nullptr); 
 
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
@@ -57,6 +58,8 @@ class genAsm
 
         inline std::string handleSpecialChar(const std::string* str);
         inline std::string createTextVarName();
+        inline std::string createFloat32VarName();
+        size_t textFloat32Count = 0;
         size_t textVarCount = 0;
 
         void genStmt();

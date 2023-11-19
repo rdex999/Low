@@ -20,9 +20,10 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     outAsm << "\n\n_start:\n\t";
     
     if(lowStdLib){
-        addStdLibFunc("printStr");
-        addStdLibFunc("printChar", "rsi");
-        addStdLibFunc("printInt", "rsi");
+        addStdLibFunc("printStr", {tokenType::dQoute});
+        addStdLibFunc("printChar", {tokenType::quote}, "rsi");
+        addStdLibFunc("printInt", {tokenType::intLit}, "rsi");
+        addStdLibFunc("printFloat32", {tokenType::floatLit, tokenType::intLit}, "rsi");
     }
 
 
@@ -36,11 +37,13 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     finalAsm << secData.str() << secText.str() << outAsm.str();
 }
 
-inline void genAsm::addStdLibFunc(const char* funcName, const char* stackReg)
+inline void genAsm::addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg)
 {
-    vars.insert({funcName, var{.stackLoc = 0, .size = -1,
-            .scope = 0, .ptrReadBytes = -1, .isFunction = true, .isExtern = true, .stackLocReg = stackReg}});
-        secText << (std::string)"\n\textern " + funcName;
+    vars.insert({funcName, var{.stackLoc = 0, .size = -1, .scope = 0, .ptrReadBytes = -1,
+        .isFunction = true, .isExtern = true, .stackLocReg = stackReg, 
+        .params = std::move(params)}});
+
+    secText << (std::string)"\n\textern " + funcName;
 }
 
 void genAsm::genStmt()
@@ -113,6 +116,13 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     case tokenType::intLit:
         outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
         break;
+
+    case tokenType::floatLit:{
+        std::string floatDataName = createFloat32VarName();
+        secData << "\n\t" << floatDataName << ": DD " << prog->sts.at(stmtIdx).vals.at(retIdx).value;
+        outAsm << "movss xmm0, DWORD [" << floatDataName << "]\n\t";
+        break;
+    }
 
     case tokenType::quote:
         outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
@@ -242,6 +252,11 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 inline std::string genAsm::createTextVarName()
 {
     return std::format("text{}", textVarCount++);
+}
+
+inline std::string genAsm::createFloat32VarName()
+{
+    return std::format("f32_{}", textFloat32Count++);
 }
 
 inline void genAsm::genExit()

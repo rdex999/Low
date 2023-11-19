@@ -5,10 +5,12 @@ enum class tokenType
 {
     _return,
     _exit,
-    intLit,
+    intLit, // 13
+    floatLit, // 10.123
     semicolon,
     ident,
     _int, // int data type
+    _float, // float data type
     equal, // =
     addEq, // +=
     subEq, // -=
@@ -28,6 +30,7 @@ enum class tokenType
     curlyClose, // }
     bracketOpen, // [
     bracketClose, // ]
+    comma, // ,
     _while,
     _break, 
     _if,

@@ -1,6 +1,2 @@
-int i = 0;
-while i < 30{
-    printInt(i);
-    printChar('\n');
-    i++;
-}
+printFloat32(10.123, 4);
+printChar('\n');

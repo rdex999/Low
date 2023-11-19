@@ -12,9 +12,6 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             isPrevOp = false;
             break;
         
-        case tokenType::parenClose:
-            return valsIdx; 
-        
         case tokenType::add:{
             isPrevOp = true;
             if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
@@ -101,8 +98,10 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
         case tokenType::lEq:
         case tokenType::_and:
         case tokenType::_or:
+        case tokenType::parenClose:
         case tokenType::curlyOpen:
         case tokenType::bracketClose:
+        case tokenType::comma:
             return valsIdx;
 
 
