@@ -23,6 +23,7 @@ class genAsm
             size_t stackLoc;
             int size; // in bytes (int = 4, char = 1..)
             int scope;
+            tokenType type; 
             int ptrReadBytes = -1; // if -1 then not a pointer
             bool isFunction = false;
             bool isExtern = false;
@@ -52,6 +53,9 @@ class genAsm
         // @returns the size to read from pointer. -1 for not found.
         inline int getOprSize(size_t stmtIdx, int idx);
 
+        // @returns {tokenType} the type of the expresion. 0 if not found
+        inline tokenType getType(size_t stmtIdx, int idx);
+
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
         void* varInScope(const std::string* varName, int scope);
@@ -80,7 +84,7 @@ class genAsm
 
         // the result is in RAX
         // @returns {int} the index
-        int genMulDiv(int from, size_t stmtIdx);
+        int genMulDiv(int from, size_t stmtIdx, tokenType type);
         
         // @returns {int} the index 
         // @param {const char*} reg

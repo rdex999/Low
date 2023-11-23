@@ -3,6 +3,12 @@
 int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 {
     bool isPrevOp = true;
+    tokenType type = getType(stmtIdx, valsIdx);
+    if(type == (tokenType)0){
+        std::cerr << "Error, no expresion type." << std::endl;
+        exit(1);
+    }
+
     for(; valsIdx<prog->sts.at(stmtIdx).vals.size(); ++valsIdx)
     {
         switch (prog->sts.at(stmtIdx).vals.at(valsIdx).type)
@@ -62,7 +68,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
             outAsm << "mov rdi, rax\n\t";
             isPrevOp = true;
             break;
@@ -76,7 +82,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
@@ -89,7 +95,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx);
+            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
@@ -111,7 +117,11 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
 
         default:
-            valsIdx = genSingle(valsIdx, "rdi", stmtIdx);
+            if(type == tokenType::_float){
+                valsIdx = genSingle(valsIdx, "xmm0", stmtIdx);
+            }else{
+                valsIdx = genSingle(valsIdx, "rdi", stmtIdx);
+            }
             isPrevOp = false;
             break;
         }
@@ -119,54 +129,103 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
     return valsIdx;
 }
 
-int genAsm::genMulDiv(int idx, size_t stmtIdx)
+int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
 {
-    if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
-        if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
-            push("rax", 8);
-            idx = genExpr(stmtIdx, idx + 2);
-            pop("rax", 8);
-            outAsm << "mul rdi\n\t";
-            return idx;
-        }else{
-            push("rax", 8);
-            idx = genSingle(idx + 1, "rbx", stmtIdx);
-            pop("rax", 8);
-            outAsm << "mul rbx\n\t";
-            return idx;
-        }
+    switch (type)
+    {
+    case tokenType::_int:
+    case tokenType::_char:{
+        if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
+            if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
+                push("rax", 8);
+                idx = genExpr(stmtIdx, idx + 2);
+                pop("rax", 8);
+                outAsm << "mul rdi\n\t";
+                return idx;
+            }else{
+                push("rax", 8);
+                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                pop("rax", 8);
+                outAsm << "mul rbx\n\t";
+                return idx;
+            }
 
-    }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
-        if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
-            push("rax", 8);
-            idx = genExpr(stmtIdx, idx + 2);
-            pop("rax", 8);
-            outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
-            return idx;
-        }else{
-            push("rax", 8);
-            idx = genSingle(idx + 1, "rbx", stmtIdx);
-            pop("rax", 8);
-            outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
-            return idx;
-        } 
-    }
-    else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::percent){
-        if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
-            push("rax", 8);
-            idx = genExpr(stmtIdx, idx + 2);
-            pop("rax", 8);
-            outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
-            outAsm << "mov rax, rdx\n\t";
-            return idx;
-        }else{
-            push("rax", 8);
-            idx = genSingle(idx + 1, "rbx", stmtIdx);
-            pop("rax", 8);
-            outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
-            outAsm << "mov rax, rdx\n\t";
-            return idx;
+        }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
+            if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
+                push("rax", 8);
+                idx = genExpr(stmtIdx, idx + 2);
+                pop("rax", 8);
+                outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
+                return idx;
+            }else{
+                push("rax", 8);
+                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                pop("rax", 8);
+                outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
+                return idx;
+            } 
         }
+        else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::percent){
+            if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
+                push("rax", 8);
+                idx = genExpr(stmtIdx, idx + 2);
+                pop("rax", 8);
+                outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
+                outAsm << "mov rax, rdx\n\t";
+                return idx;
+            }else{
+                push("rax", 8);
+                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                pop("rax", 8);
+                outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
+                outAsm << "mov rax, rdx\n\t";
+                return idx;
+            }
+        }
+        
+        break;
+    }
+
+    case tokenType::_float:{
+        if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
+            if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
+                push("xmm0", 4, "", "movss");
+                idx = genExpr(stmtIdx, idx + 2);
+                pop("xmm1", 4, "movss");
+                outAsm << "mulss xmm0, xmm1\n\t";
+                return idx;
+            }else{
+                push("xmm0", 4, "", "movss");
+                idx = genSingle(idx + 1, "xmm1", stmtIdx);
+                pop("xmm1", 4, "", "movss");
+                outAsm << "mulss xmm0, xmm1\n\t";
+                return idx;
+            }
+
+        }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
+            if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
+                push("xmm0", 4, "", "movss");
+                idx = genExpr(stmtIdx, idx + 2);
+                pop("xmm1", 4, "", "movss");
+                outAsm << "divss xmm1, xmm0\n\tmovss xmm0, xmm1\n\t";
+                return idx;
+            }else{
+                push("xmm0", 4, "", "movss");
+                idx = genSingle(idx + 1, "xmm1", stmtIdx);
+                pop("xmm0", 4, "", "movss");
+                outAsm << "divss xmm0, xmm1\n\t";
+                return idx;
+            } 
+        }
+        else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::percent){
+            std::cerr << "Error, cannot use modulo operator on floats." << std::endl;
+            exit(1);
+        }
+        break;
+    }
+    
+    default:
+        break;
     }
 
     return -1;

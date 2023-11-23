@@ -96,6 +96,11 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 {
     int retIdx = idx;
     int oprSize = -1;
+    tokenType type = getType(stmtIdx, idx);
+    if(type == (tokenType)0){
+        std::cerr << "Error, no expresion type." << std::endl;
+        exit(1);
+    }
 
     if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.size() > retIdx + 1 &&
         (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::pp ||
@@ -120,7 +125,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     case tokenType::floatLit:{
         std::string floatDataName = createFloat32VarName();
         secData << "\n\t" << floatDataName << ": DD " << prog->sts.at(stmtIdx).vals.at(retIdx).value;
-        outAsm << "movss xmm0, DWORD [" << floatDataName << "]\n\t";
+        outAsm << "movss " << reg << ", DWORD [" << floatDataName << "]\n\t";
         break;
     }
 
@@ -214,14 +219,27 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mul ||
         prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::div))
     {
-        bool isRax = true;
-        if(std::string("rax") != reg){
-            outAsm << "mov rax, " << reg << "\n\t";
-            isRax = false; 
-        }
-        retIdx = genMulDiv(retIdx + 1, index);
-        if(!isRax){
-            outAsm << "mov " << reg << ", rax\n\t";
+        if(type == tokenType::_float){
+            bool isXmm0 = true;
+            if((std::string)"xmm0" != reg){
+                outAsm << "movss xmm0, " << reg << "\n\t";
+                isXmm0 = false;
+            }
+            retIdx = genMulDiv(retIdx + 1, stmtIdx, tokenType::_float);
+            if(!isXmm0){
+                outAsm << "movss " << reg << ", xmm0\n\t";
+            }
+        
+        }else{
+            bool isRax = true;
+            if(std::string("rax") != reg){
+                outAsm << "mov rax, " << reg << "\n\t";
+                isRax = false; 
+            }
+            retIdx = genMulDiv(retIdx + 1, stmtIdx, tokenType::_int);
+            if(!isRax){
+                outAsm << "mov " << reg << ", rax\n\t";
+            }
         }
     }
 
@@ -301,6 +319,10 @@ inline std::string genAsm::handleSpecialChar(const std::string* str)
                 out.replace(i, 2, "\", 12, \""); 
                 break;
 
+            case '0':
+                out.replace(i, 2, "\", 0, \""); 
+                break;
+
             default:
                 out.erase(i, 1);
                 ++i;
@@ -326,4 +348,29 @@ inline int genAsm::getOprSize(size_t stmtIdx, int idx)
         }
     }
     return -1;
+}
+
+inline tokenType genAsm::getType(size_t stmtIdx, int idx)
+{
+    for(; idx<prog->sts.at(stmtIdx).vals.size(); ++idx){
+        switch (prog->sts.at(stmtIdx).vals.at(idx).type)
+        {
+        case tokenType::ident:{
+            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size());
+            return v->type;
+            break;
+        }
+
+        case tokenType::intLit:
+            return tokenType::_int;
+
+        case tokenType::floatLit:
+            return tokenType::_float;
+
+        default:
+            break;
+        }
+    }
+
+    return (tokenType)0;
 }

@@ -1,2 +1,1 @@
-printFloat32(-12.1234, 4);
-printChar('\n');
+printFloat32(6.2 / 2.0, 5);

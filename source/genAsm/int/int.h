@@ -38,7 +38,7 @@ inline void genAsm::genInt(int idx)
                     exit(1);
                 }
                 
-                var v = {.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size()};
+                var v = {.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size(), .type = tokenType::_int};
                 if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr || isArr){
                     v.ptrReadBytes = 4;
                     v.size = 8;

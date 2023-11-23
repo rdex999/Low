@@ -3,7 +3,7 @@
 
 enum class tokenType
 {
-    _return,
+    _return = 1,
     _exit,
     intLit, // 13
     floatLit, // 10.123
