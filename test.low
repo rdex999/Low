@@ -1,2 +1,2 @@
-int a = 3342 - 6000;
-printInt(a);
+printFloat32(-12.1234, 4);
+printChar('\n');

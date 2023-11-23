@@ -1,7 +1,8 @@
 bits 64
 
 section .data
-    tenF32: DD 10.0
+    tenF32: dd 10.0
+    mOneF32: dd -1.0
 
 section .text
     global printFloat32
@@ -12,23 +13,37 @@ section .text
 ; 2) {int} the amount of digits to print after the point ( rdi )
 ; 3) {byte*} the location on the stack (given by the compiler) ( rsi )
 printFloat32:
+    cvtss2si eax, xmm0 ; convert to int 13.1234 -> 13
     mov rbx, rdi
-    cvtss2si edi, xmm0 ; convert to int 13.1234 -> 13
-     
+
+    mov edi, eax 
+    shr edi, 31
+    jz printFloat32Init
+
+    mov BYTE [rsi], '-'
+    mov rax, 1
+    mov rdi, 1
+    mov rdx, 1
+    syscall
+
+    movss xmm1, DWORD [mOneF32]
+    mulss xmm0, xmm1
+    cvtss2si eax, xmm0 ; convert to int 13.1234 -> 13
+
+printFloat32Init: 
     add rsi, 10 ; alloc 10 bytes 
-    mov rax, rdi
     mov rcx, 1
     mov BYTE [rsi+1], '.'
 
 .printIntLoop:
     xor rdx, rdx
-    mov rdi, 10
-    div rdi
+    mov edi, 10
+    div edi
     add dl, 48
     mov [rsi], dl
     dec rsi
     inc rcx
-    cmp rax, 0
+    cmp eax, 0
     jne .printIntLoop
 
     mov rax, 1
@@ -49,16 +64,15 @@ printFloat32:
     cmp rcx, rbx
     jne .mulTenLoop
 
-    cvtss2si edi, xmm0 ; convert to int 123.4 -> 123
+    cvtss2si eax, xmm0 ; convert to int 123.4 -> 123
 
     add rsi, 10 ; alloc 10 bytes 
-    mov rax, rdi
     xor rcx, rcx
 
 .printIntLoop2:
     xor rdx, rdx
-    mov rdi, 10
-    div rdi
+    mov edi, 10
+    div edi
     add dl, 48
     mov [rsi], dl
     dec rsi
