@@ -1,5 +1,2 @@
-if 0.1{
-    printStr("true\n");
-}else{
-    printStr("false\n");
-}
+int a = 3342 - 6000;
+printInt(a);
