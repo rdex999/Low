@@ -25,10 +25,17 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            push("rdi", 8);
-            valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
-            pop("rdi", 8);
-            outAsm << "add rdi, rbx\n\t";
+            if(type == tokenType::_float){
+                push("xmm0", 4, "", "movss");
+                valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
+                pop("xmm0", 4, "", "movss");
+                outAsm << "addss xmm0, xmm1\n\t";
+            }else{
+                push("rdi", 8);
+                valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
+                pop("rdi", 8);
+                outAsm << "add rdi, rbx\n\t";
+            }
 
             break;
         }
@@ -40,10 +47,17 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            push("rdi", 8);
-            valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
-            pop("rdi", 8);
-            outAsm << "sub rdi, rbx\n\t";
+            if(type == tokenType::_float){
+                push("xmm0", 4, "", "movss");
+                valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
+                pop("xmm0", 4, "", "movss");
+                outAsm << "subss xmm0, xmm1\n\t";
+            }else{
+                push("rdi", 8);
+                valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
+                pop("rdi", 8);
+                outAsm << "sub rdi, rbx\n\t";
+            }
 
             break;
         }
@@ -62,14 +76,22 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                     exit(1);
                 }
                 valsIdx = genSingle(valsIdx+1, "rdi", stmtIdx);
-                outAsm << "mov " << selectReg("rdi", oprSize) << ", " << selectWord(oprSize) << " [rdi]\n\t";
+                if(type == tokenType::_float){
+                    outAsm << "movss xmm0, DWORD [rdi]\n\t";
+                }else{
+                    outAsm << "mov " << selectReg("rdi", oprSize) << ", " << selectWord(oprSize) << " [rdi]\n\t";
+                } 
                 isPrevOp = false;
                 break;
             }
 
-            outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
-            outAsm << "mov rdi, rax\n\t";
+            if(type == tokenType::_float){
+                valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
+            }else{
+                outAsm << "mov rax, rdi\n\t";
+                valsIdx = genMulDiv(valsIdx, stmtIdx, type);
+                outAsm << "mov rdi, rax\n\t";
+            } 
             isPrevOp = true;
             break;
         }
@@ -81,9 +103,13 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
-            outAsm << "mov rdi, rax\n\t";
+            if(type == tokenType::_float){
+                valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
+            }else{
+                outAsm << "mov rax, rdi\n\t";
+                valsIdx = genMulDiv(valsIdx, stmtIdx, type);
+                outAsm << "mov rdi, rax\n\t";
+            }
             break;
         }
 
@@ -91,6 +117,11 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             isPrevOp = true;
             if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use modulo(%) operator without a value." << std::endl;
+                exit(1);
+            }
+
+            if(type == tokenType::_float){
+                std::cerr << "Error, cannot use modulo operator (%) on floats." << std::endl;
                 exit(1);
             }
 
@@ -197,7 +228,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
             }else{
                 push("xmm0", 4, "", "movss");
                 idx = genSingle(idx + 1, "xmm1", stmtIdx);
-                pop("xmm1", 4, "", "movss");
+                pop("xmm0", 4, "", "movss");
                 outAsm << "mulss xmm0, xmm1\n\t";
                 return idx;
             }

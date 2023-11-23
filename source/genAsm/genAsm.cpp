@@ -124,7 +124,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
     case tokenType::floatLit:{
         std::string floatDataName = createFloat32VarName();
-        secData << "\n\t" << floatDataName << ": DD " << prog->sts.at(stmtIdx).vals.at(retIdx).value;
+        secData << "\n\t" << floatDataName << ": dd " << prog->sts.at(stmtIdx).vals.at(retIdx).value;
         outAsm << "movss " << reg << ", DWORD [" << floatDataName << "]\n\t";
         break;
     }
