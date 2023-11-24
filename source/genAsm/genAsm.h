@@ -43,6 +43,9 @@ class genAsm
 
         inline void addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg = nullptr); 
 
+        // @returns {size_t} lables until closing curly
+        size_t findLableCountCurly(size_t stmtIdx);
+
         // used in genIfExpr for comparing two things
         int cmpTwo(size_t stmtIdx, int idx, tokenType cmpType);
 

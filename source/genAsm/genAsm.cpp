@@ -360,17 +360,20 @@ inline tokenType genAsm::getType(size_t stmtIdx, int idx)
     for(; idx<prog->sts.at(stmtIdx).vals.size(); ++idx){
         switch (prog->sts.at(stmtIdx).vals.at(idx).type)
         {
-        case tokenType::ident:{
-            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size());
-            return v->type;
-            break;
-        }
+        case tokenType::ident:
+            return ((var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size()))->type;
 
         case tokenType::intLit:
             return tokenType::_int;
 
         case tokenType::floatLit:
             return tokenType::_float;
+
+        case tokenType::quote:
+            return tokenType::_char;
+
+        case tokenType::dQoute:
+            return tokenType::dQoute;
 
         default:
             break;

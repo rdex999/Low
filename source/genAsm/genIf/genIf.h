@@ -7,6 +7,7 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
         switch (prog->sts.at(stmtIdx).vals.at(from).type)
         {
         case tokenType::curlyOpen:
+        case tokenType::semicolon:
             if(handleCurly){
                 genCurly(from, false);
             }
@@ -82,11 +83,17 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
                     goto afterCmpCheck;
                     break;
 
+                case tokenType::ident:{
+                    cmpType = ((var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(i).value, scopeStackLoc.size()))->type;
+                    goto afterCmpCheck;
+                    break;
+                }
+
                 default:
                     if(prog->sts.at(stmtIdx).vals.at(i).type >= tokenType::_or &&
                         prog->sts.at(stmtIdx).vals.at(i).type <= tokenType::lEq)
                     {
-                        std::cerr << "Error, unknows compare size. Try casting to somethig." << std::endl;
+                        std::cerr << "Error, unknows compare size. Try casting to something." << std::endl;
                         exit(1);
                     }
                     break;

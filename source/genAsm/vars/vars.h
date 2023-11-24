@@ -33,3 +33,23 @@ void *genAsm::varAccessible(const std::string *varName, int scope)
     }
     return v;
 }
+
+size_t genAsm::findLableCountCurly(size_t stmtIdx)
+{
+    size_t lableCount = 0;
+    size_t curlyCount = 1;
+    for(; stmtIdx < prog->sts.size(); ++stmtIdx){
+        for(int i=0; i<prog->sts.at(stmtIdx).vals.size(); ++i){
+            if(prog->sts.at(stmtIdx).vals.at(i).type == tokenType::curlyOpen){
+                ++curlyCount;
+            }else if(prog->sts.at(stmtIdx).vals.at(i).type == tokenType::curlyClose){
+                --curlyCount;
+                ++lableCount;
+                if(!curlyCount){
+                    return lableCount;
+                }
+            }
+        }
+    }
+    return lableCount;
+}
