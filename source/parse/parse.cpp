@@ -55,6 +55,11 @@ inline void parse::parseSt(const token* t)
             }
             break;
 
+        case tokenType::_for:
+            st.vals.push_back(token{.type = tokenType::_for});
+            prog.sts.push_back(st);
+            return;
+
         default:
             st.vals.push_back(tokens->at(index));
             if(index + 1 < tokens->size()){

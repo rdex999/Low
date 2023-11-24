@@ -7,7 +7,6 @@ namespace node
     // statement
     struct st
     {
-        // the values after the statement.
         // index 0 is the key 
         std::vector<token> vals; 
     };

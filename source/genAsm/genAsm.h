@@ -102,4 +102,5 @@ class genAsm
         inline void genIf();
         inline int genFunctionCall(int idx);
         inline void genWhile(int idx = 0);
+        inline void genFor(int idx = 0);
 };

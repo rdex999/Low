@@ -10,6 +10,7 @@
 #include "char/char.h"
 #include "functions/functions.h"
 #include "while/while.h"
+#include "for/for.h"
 
 genAsm::genAsm(const node::program* prog, bool lowStdLib)
 {
@@ -27,7 +28,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     }
 
 
-    for(index = 0; index < prog->sts.size(); index++)
+    for(index = 0; index < prog->sts.size(); ++index)
     {
         genStmt();
     }
@@ -85,6 +86,10 @@ void genAsm::genStmt()
 
     case tokenType::_while:
         genWhile();
+        break;
+
+    case tokenType::_for:
+        genFor();
         break;
 
     default:

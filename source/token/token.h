@@ -32,6 +32,7 @@ enum class tokenType
     bracketClose, // ]
     comma, // ,
     _while,
+    _for,
     _break, 
     _if,
     _else,

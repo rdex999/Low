@@ -38,6 +38,10 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_while});
             }
 
+            else if(buffer == "for"){
+                tokens.push_back(token{.type = tokenType::_for});
+            }
+
             else if(buffer == "if"){
                 tokens.push_back(token{.type = tokenType::_if});
             }
