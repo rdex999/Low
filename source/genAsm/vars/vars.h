@@ -40,14 +40,27 @@ size_t genAsm::findLableCountCurly(size_t stmtIdx)
     size_t curlyCount = 1;
     for(; stmtIdx < prog->sts.size(); ++stmtIdx){
         for(int i=0; i<prog->sts.at(stmtIdx).vals.size(); ++i){
-            if(prog->sts.at(stmtIdx).vals.at(i).type == tokenType::curlyOpen){
-                ++curlyCount;
-            }else if(prog->sts.at(stmtIdx).vals.at(i).type == tokenType::curlyClose){
+            switch (prog->sts.at(stmtIdx).vals.at(i).type)
+            {
+            case tokenType::curlyOpen:
+                ++curlyCount; 
+                break;
+
+            case tokenType::curlyClose:
                 --curlyCount;
                 ++lableCount;
                 if(!curlyCount){
                     return lableCount;
                 }
+                break;
+            
+            case tokenType::_while: 
+            case tokenType::_for: 
+                lableCount += 2;
+                break;
+
+            default:
+                break;
             }
         }
     }

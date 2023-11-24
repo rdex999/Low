@@ -25,17 +25,19 @@ inline void genAsm::genFor(int idx)
     outAsm << "jmp .L" << lableForCmp << "\n\t";
     outAsm << "\r.L" << lableNum++ << ":\n\t";
 
-    size_t curlyCount = 1; 
+    size_t curlyCount = 0;
     for(; index < prog->sts.size(); ++index){
         for(int i=0; i<prog->sts.at(index).vals.size(); ++i){
             if(prog->sts.at(index).vals.at(i).type == tokenType::curlyOpen){
                 ++curlyCount;
             }else if(prog->sts.at(index).vals.at(i).type == tokenType::curlyClose){
-                --curlyCount;
-                if(!curlyCount){
+                if(curlyCount == 0){
                     indexForEnd = index;
                     goto afterBothForGFL;
                 }
+                --curlyCount;
+            }else if(prog->sts.at(index).vals.at(i).type == tokenType::_while){ // because the while loop generation icreases the index
+                break; 
             }
         }
         genStmt();
@@ -46,12 +48,12 @@ inline void genAsm::genFor(int idx)
     // indexFor+3 -> third statement of for
     index = indexFor+3;
     genStmt();
-
+    
     --index; // second statement of for
     outAsm << "\r.L" << lableNum++ << ":\n\t";
-
+    
     genIfExpr(0, forLoopLable, index, true, false);
-
+    
     index = indexForEnd;
     genStmt();
 }
