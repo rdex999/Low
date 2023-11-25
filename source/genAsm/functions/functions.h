@@ -10,22 +10,79 @@ inline int genAsm::genFunctionCall(int idx)
         exit(1);
     }
 
-    for(int i=0; i<v->params.size(); ++i){
-        
-        retIdx = genExpr(index, retIdx);
-        if(prog->sts.at(index).vals.at(retIdx).type == tokenType::parenClose && i < v->params.size() - 1){
-            std::cerr << "Error, too few arguments to function call. '" <<
-                prog->sts.at(index).vals.at(idx).value << "' takes " << v->params.size() << " arguments." << std::endl;
-            exit(1);
+    // counts arguments
+    int parenCount = 0;
+    std::vector<int> argsIdxs; 
+    for(int i=idx; i<prog->sts.at(index).vals.size(); ++i){
+        if(prog->sts.at(index).vals.at(i).type == tokenType::comma){
+            argsIdxs.push_back(i+1);
         }
-        
-        if(prog->sts.at(index).vals.at(retIdx).type != tokenType::comma &&
-            prog->sts.at(index).vals.at(retIdx).type != tokenType::parenClose)
-        {
-            std::cerr << "Error, expected comma (,)" << std::endl;
-            exit(1);
+        if(prog->sts.at(index).vals.at(i).type == tokenType::parenOpen){
+            ++parenCount;
+            if(i == idx+1 && idx+2 < prog->sts.at(index).vals.size() && prog->sts.at(index).vals.at(idx+2).type != tokenType::parenClose){
+                argsIdxs.push_back(i+1);
+            }
+        }else if(prog->sts.at(index).vals.at(i).type == tokenType::parenClose){
+            --parenCount;
+            if(!parenCount){
+                break;
+            }
         }
-        ++retIdx;
+    }
+
+    // generate arguments
+    if(argsIdxs.size()){
+        for(int i = argsIdxs.size() - 1; i>=0; --i){
+            retIdx = genExpr(index, argsIdxs.at(i));
+            tokenType exprType = getType(index, argsIdxs.at(i));
+            switch (i)
+            {
+            case 0:
+                break;
+
+            case 1:
+                outAsm << "mov rsi, rdi\n\t";
+                break;
+            
+            case 2:
+                outAsm << "mov rdx, rdi\n\t";
+                break;
+            
+            case 3:
+                outAsm << "mov rcx, rdi\n\t";
+                break;
+
+            case 4:
+                outAsm << "mov r8, rdi\n\t";
+                break;
+
+            case 5:
+                outAsm << "mov r9, rdi\n\t";
+                break;
+
+            default:
+                switch (exprType){
+                case tokenType::_int:
+                    push("edi", 4);
+                    break;
+                case tokenType::_char:
+                    push("dil", 1);
+                    break;
+                case tokenType::_float:
+                    push("xmm0", 8, "", "movss");
+                    break;
+                case tokenType::dQoute:
+                    push("rdi", 8);
+                    break;
+                
+                default:
+                    std::cerr << "Error, unknown expresion type." << std::endl;
+                    exit(1);
+                    break;
+                }
+                break;
+            }
+        }
     }
 
     if(v->stackLocReg){

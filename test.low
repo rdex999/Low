@@ -9,3 +9,5 @@ for int i=0; i < 10; ++i{
 
 afterFor:
     printStr("After for loop\n");
+    printFloat32(132.312452, 10);
+    printChar('\n');

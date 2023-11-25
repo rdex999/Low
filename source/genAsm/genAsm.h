@@ -28,7 +28,6 @@ class genAsm
             bool isFunction = false;
             bool isExtern = false;
             const char* stackLocReg = nullptr; 
-            std::vector<tokenType> params;
         };
 
         std::vector<int> scopeStackLoc;
@@ -41,7 +40,7 @@ class genAsm
         size_t stackLoc = 0;
         size_t lableNum = 0;
 
-        inline void addStdLibFunc(const char* funcName, std::vector<tokenType> params, const char* stackReg = nullptr); 
+        inline void addStdLibFunc(const char* funcName, const char* stackReg = nullptr); 
 
         // @returns {size_t} lables until closing curly
         size_t findLableCountCurly(size_t stmtIdx);
