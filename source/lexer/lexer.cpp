@@ -42,6 +42,10 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_for});
             }
 
+            else if(buffer == "goto"){
+                tokens.push_back(token{.type = tokenType::_goto});
+            }
+
             else if(buffer == "if"){
                 tokens.push_back(token{.type = tokenType::_if});
             }
@@ -61,7 +65,6 @@ std::vector<token> lexer::createTokens()
             else if(buffer == "or"){
                 tokens.push_back(token{.type = tokenType::_or});
             }
-
 
             else{
                 tokens.push_back(token{.type = tokenType::ident, .value = buffer});
@@ -320,6 +323,10 @@ std::vector<token> lexer::createTokens()
 
             else if(buffer == ","){
                 tokens.push_back(token{.type = tokenType::comma});
+            }
+
+            else if(buffer == ":"){
+                tokens.push_back(token{.type = tokenType::colon});
             }
 
             else{

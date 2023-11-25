@@ -60,6 +60,14 @@ inline void parse::parseSt(const token* t)
             prog.sts.push_back(st);
             return;
 
+        case tokenType::colon:
+            if(index - 1 >= 0 && tokens->at(index-1).type == tokenType::ident){
+                st.vals.at(0).type = tokenType::lable; 
+                prog.sts.push_back(st);
+                return;
+            }
+            break;
+
         default:
             st.vals.push_back(tokens->at(index));
             if(index + 1 < tokens->size()){

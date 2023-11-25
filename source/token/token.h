@@ -4,11 +4,14 @@
 enum class tokenType
 {
     _return = 1,
+    _goto,
     _exit,
     intLit, // 13
     floatLit, // 10.123
-    semicolon,
+    semicolon, // ;
+    colon, // :
     ident,
+    lable,
     _int, // int data type
     _float, // float data type
     equal, // =

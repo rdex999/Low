@@ -92,6 +92,14 @@ void genAsm::genStmt()
         genFor();
         break;
 
+    case tokenType::lable:
+        outAsm << "\r" << prog->sts.at(index).vals.at(0).value << ":\n\t";
+        break;
+
+    case tokenType::_goto:
+        outAsm << "jmp " << prog->sts.at(index).vals.at(1).value << "\n\t";
+        break;
+
     default:
         break;
     }
