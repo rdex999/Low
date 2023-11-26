@@ -32,6 +32,7 @@ inline void parse::parseSt(const token* t)
         {
         case tokenType::_int:
         case tokenType::_char:
+        case tokenType::_float:
             st.vals.push_back(tokens->at(index));
             if(index + 1 < tokens->size() && tokens->at(index + 1).type == tokenType::mul){
                 st.vals.push_back(token{.type = tokenType::ptr});

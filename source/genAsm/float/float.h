@@ -1,6 +1,6 @@
 #pragma once
 
-inline void genAsm::genInt(int idx)
+inline void genAsm::genFloat(int idx)
 {
     size_t arrSize = 0;
     bool isArr = false;
@@ -18,10 +18,10 @@ inline void genAsm::genInt(int idx)
                             std::cerr << "Error, array declaration with an expresion is currently not supported." << std::endl;
                             exit(1);
                         }
-                    }else if(prog->sts.at(index).vals.at(i+1).type == tokenType::bracketClose){ // float[] = ....;
-                        // TODO
+                    }else if(prog->sts.at(index).vals.at(i+1).type == tokenType::bracketClose){ // int[] = ....;
+
                     }else{
-                        std::cerr << "Error, an array must be declared with a constant expresion. ( int[10] s; )" << std::endl;
+                        std::cerr << "Error, an array must be declared with a constant expresion. ( float[10] s; )" << std::endl;
                         exit(1);
                     }
 
@@ -38,7 +38,7 @@ inline void genAsm::genInt(int idx)
                     exit(1);
                 }
                 
-                var v = {.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size(), .type = tokenType::_int};
+                var v = {.stackLoc = stackLoc, .size = 4, .scope = (int)scopeStackLoc.size(), .type = tokenType::_float};
                 if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr || isArr){
                     v.ptrReadBytes = 4;
                     v.size = 8;
@@ -46,11 +46,15 @@ inline void genAsm::genInt(int idx)
 
                 vars.insert({prog->sts.at(index).vals.at(i).value, v});
                 if(i+1 < prog->sts.at(index).vals.size() &&
-                    prog->sts.at(index).vals.at(i+1).type == tokenType::equal) // int x = ...;
+                    prog->sts.at(index).vals.at(i+1).type == tokenType::equal) // float x = ...;
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
                         i = genExpr(index, i+2);
-                        push(selectReg("rdi", v.size).c_str(), v.size);
+                        if(v.ptrReadBytes == -1){
+                            push("xmm0", v.size, "", "movss");
+                        }else{
+                            push("rdi", 8);
+                        }
                         i += 2;
                     }else{
                         std::cerr << "Error, cannot use assignment operator(=) without a value." << std::endl;

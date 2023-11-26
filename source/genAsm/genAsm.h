@@ -97,6 +97,7 @@ class genAsm
         inline void genExit();
         inline void genInt(int idx = 0);
         inline void genChar(int idx = 0);
+        inline void genFloat(int idx = 0);
         inline void genUpdateIdent();
         inline void genCurly(int idx = 0, bool isFromElse = false);
         inline int genPreIncDec(int idx, const char* reg = nullptr);

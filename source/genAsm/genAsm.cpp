@@ -6,8 +6,9 @@
 #include "registers/registers.h"
 #include "genIf/genIf.h"
 #include "int/int.h"
-#include "ident/ident.h"
 #include "char/char.h"
+#include "float/float.h"
+#include "ident/ident.h"
 #include "functions/functions.h"
 #include "while/while.h"
 #include "for/for.h"
@@ -60,6 +61,10 @@ void genAsm::genStmt()
 
     case tokenType::_char:
         genChar();
+        break;
+
+    case tokenType::_float:
+        genFloat();
         break;
 
     case tokenType::ident:
@@ -160,8 +165,17 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         if(oprSize == -1){
             oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
         }
-        outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
-            " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+        if(v->ptrReadBytes == -1){
+            if(type == tokenType::_int){
+                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
+                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+            }else if(type == tokenType::_float){
+                outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
+            }
+        }else{
+            outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
+                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+        }
 
         break;
     }
@@ -381,6 +395,9 @@ inline tokenType genAsm::getType(size_t stmtIdx, int idx)
 
         case tokenType::dQoute:
             return tokenType::dQoute;
+
+        case tokenType::singleAnd:
+            return tokenType::ptr;
 
         default:
             break;

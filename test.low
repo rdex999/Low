@@ -1,13 +1,4 @@
-for int i=0; i < 10; ++i{
-    if i is 2{
-        printStr("Found 2!\n");
-        goto afterFor;
-    }
-    printInt(i);
-    printChar('\n');
-}
-
-afterFor:
-    printStr("After for loop\n");
-    printFloat32(132.312452, 10);
-    printChar('\n');
+float x = 13.1232;
+float ptr pt = &x;
+printFloat32( *pt, 5);
+printChar('\n');

@@ -70,20 +70,37 @@ inline void genAsm::genUpdateIdent()
     switch (prog->sts.at(index).vals.at(operatorIdx).type)
     {
     case tokenType::equal:
-        if(ptr){
-            outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "movss " << selectWord(v->ptrReadBytes) << " [rbx], xmm0\n\t";
+            }else{
+                outAsm << "movss " << selectWord(v->size) << " [rsp + " <<
+                    (int)(v->stackLoc) << "], xmm0\n\t";
+            }
         }else{
-            outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
-                (int)(v->stackLoc) << "], " <<
-                selectReg("rdi", v->size) << "\n\t";
-        } 
+            if(ptr){
+                outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+            }else{
+                outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
+                    (int)(v->stackLoc) << "], " <<
+                    selectReg("rdi", v->size) << "\n\t";
+            }
+        }
         break;
 
     case tokenType::pp:
-        if(ptr){
-            outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "addss " << selectWord(v->ptrReadBytes) << " [rbx], 1\n\t";
+            }else{
+                genPostIncDec(identIdx);
+            }
         }else{
-            genPostIncDec(identIdx);
+            if(ptr){
+                outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            }else{
+                genPostIncDec(identIdx);
+            }
         }
         break; 
     case tokenType::mm:

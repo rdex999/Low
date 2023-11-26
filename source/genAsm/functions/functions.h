@@ -32,63 +32,68 @@ inline int genAsm::genFunctionCall(int idx)
 
     // generate arguments
     if(argsIdxs.size()){
+        int regularRegistersCount = 0;
+        int xmmRegistersCount = 0;
+        bool rdiWasUsed = false;
         for(int i = argsIdxs.size() - 1; i>=0; --i){
             retIdx = genExpr(index, argsIdxs.at(i));
             tokenType exprType = getType(index, argsIdxs.at(i));
-            switch (i)
-            {
-            case 0:
-                break;
+            if(exprType == (tokenType)0){
+                std::cerr << "Error, unknown expresion type. Try casting to something." << std::endl;
+                exit(1);
+            }
+            if(exprType == tokenType::_int || exprType == tokenType::_char){
+                switch (xmmRegistersCount)
+                {
+                case 0:
+                    push("rdi", 8);
+                    rdiWasUsed = true;
+                    break;
 
-            case 1:
-                outAsm << "mov rsi, rdi\n\t";
-                break;
-            
-            case 2:
-                outAsm << "mov rdx, rdi\n\t";
-                break;
-            
-            case 3:
-                outAsm << "mov rcx, rdi\n\t";
-                break;
+                case 1:
+                    outAsm << "mov rsi, rdi\n\t";
+                    break;
 
-            case 4:
-                outAsm << "mov r8, rdi\n\t";
-                break;
+                case 2:
+                    outAsm << "mov rdx, rdi\n\t";
+                    break;
 
-            case 5:
-                outAsm << "mov r9, rdi\n\t";
-                break;
+                case 3:
+                    outAsm << "mov rcx, rdi\n\t";
+                    break;
 
-            default:
-                switch (exprType){
-                case tokenType::_int:
+                case 4:
+                    outAsm << "mov r8, rdi\n\t";
+                    break;
+
+                case 5:
+                    outAsm << "mov r9, rdi\n\t";
+                    break;
+
+                default:
                     push("edi", 4);
                     break;
-                case tokenType::_char:
-                    push("dil", 1);
-                    break;
-                case tokenType::_float:
-                    push("xmm0", 8, "", "movss");
-                    break;
-                case tokenType::dQoute:
-                    push("rdi", 8);
-                    break;
-                
-                default:
-                    std::cerr << "Error, unknown expresion type." << std::endl;
-                    exit(1);
-                    break;
                 }
-                break;
+                ++regularRegistersCount;
+            }else if(exprType == tokenType::_float){
+                if(xmmRegistersCount > 0) {
+                    if(xmmRegistersCount < 6){
+                        outAsm << "movss xmm" << xmmRegistersCount << ", xmm0\n\t";
+                    }else{
+                        push("xmm0", 4, "", "movss");
+                    }
+                }
+                ++xmmRegistersCount;
             }
+        }
+        if(rdiWasUsed){
+            pop("rdi", 8);
         }
     }
 
     if(v->stackLocReg){
         outAsm << "lea " << v->stackLocReg << ", [rsp + " << stackLoc << "]\n\t";
     }
-
     outAsm << "call " << prog->sts.at(index).vals.at(idx).value << "\n\t";
     return retIdx;
 }

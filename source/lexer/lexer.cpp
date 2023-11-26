@@ -30,6 +30,10 @@ std::vector<token> lexer::createTokens()
                 tokens.push_back(token{.type = tokenType::_char});
             }
 
+            else if(buffer == "float"){
+                tokens.push_back(token{.type = tokenType::_float});
+            }
+
             else if(buffer == "ptr"){
                 tokens.push_back(token{.type = tokenType::ptr});
             }
