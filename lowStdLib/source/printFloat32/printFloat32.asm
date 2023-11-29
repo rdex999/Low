@@ -56,7 +56,7 @@ printFloat32Init:
     cvtsi2ss xmm1, edi ; convert to float32 13 -> 13.0
     subss xmm0, xmm1   ; gen the fractional part 13.1234 - 13 = 0.1234
 
-    mov rcx, 1
+    mov rcx, 0
     movss xmm1, DWORD [tenF32]
 .mulTenLoop: ;          multiply by 10.0 to shift the fractional part 0.1234 -> 1.234 -> 12.34 -> .....
     mulss xmm0, xmm1

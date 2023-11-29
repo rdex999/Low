@@ -1,5 +1,5 @@
 float x = 12.232321;
-float ptr y = &x;
-*y--;
+float ptr pt = &x;
+*pt /= 2.2;
 printFloat32(x, 5);
 printChar('\n');

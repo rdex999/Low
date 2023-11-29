@@ -118,68 +118,114 @@ inline void genAsm::genUpdateIdent()
         break;
 
     case tokenType::addEq:
-        if(ptr){
-            outAsm << "add " << selectWord(v->ptrReadBytes) <<
-                " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "movss xmm1, [rbx]\n\t";
+                outAsm << "addss xmm1, xmm0\n\t";
+                outAsm << "movss [rbx], xmm1\n\t";
+            }else{
+                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "addss xmm1, xmm0\n\t";
+                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+            }
         }else{
-            outAsm << "add " << selectWord(v->size) << " [rsp + " <<
-                (int)(v->stackLoc) << "], " <<
-                selectReg("rdi", v->size) << "\n\t";
-        } 
+            if(ptr){
+                outAsm << "add " << selectWord(v->ptrReadBytes) <<
+                    " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+            }else{
+                outAsm << "add " << selectWord(v->size) << " [rsp + " <<
+                    (int)(v->stackLoc) << "], " <<
+                    selectReg("rdi", v->size) << "\n\t";
+            }
+        }
         break;
     
     case tokenType::subEq:
-        if(ptr){
-            outAsm << "sub " << selectWord(v->ptrReadBytes) <<
-                " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "movss xmm1, [rbx]\n\t";
+                outAsm << "subss xmm1, xmm0\n\t";
+                outAsm << "movss [rbx], xmm1\n\t";
+            }else{
+                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "subss xmm1, xmm0\n\t";
+                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+            }
         }else{
-            outAsm << "sub " << selectWord(v->size) << " [rsp + " <<
-                (int)(v->stackLoc) << "], " <<
-                selectReg("rdi", v->size) << "\n\t";
-        } 
+            if(ptr){
+                outAsm << "sub " << selectWord(v->ptrReadBytes) <<
+                    " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+            }else{
+                outAsm << "sub " << selectWord(v->size) << " [rsp + " <<
+                    (int)(v->stackLoc) << "], " <<
+                    selectReg("rdi", v->size) << "\n\t";
+            }
+        }
         break;
     
     case tokenType::mulEq:
-        outAsm << "mov rax, rdi\n\t";
-
-        if(ptr){
-            outAsm << "mul " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
-            
-            outAsm << "mov " << selectWord(v->ptrReadBytes)
-                << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "movss xmm1, [rbx]\n\t";
+                outAsm << "mulss xmm1, xmm0\n\t";
+                outAsm << "movss [rbx], xmm1\n\t";
+            }else{
+                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "mulss xmm1, xmm0\n\t";
+                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+            }
         }else{
-            outAsm << "mul " << selectWord(v->size) << " [rsp + " <<
-                (int)(v->stackLoc) << "]\n\t";
+            outAsm << "mov rax, rdi\n\t";
+            if(ptr){
+                outAsm << "mul " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
 
-            outAsm << "mov " << selectWord(v->size) <<
-                " [rsp + " << (int)(v->stackLoc) << "], " << 
-                selectReg("rax", v->size) << "\n\t";
-        } 
-        break;
+                outAsm << "mov " << selectWord(v->ptrReadBytes)
+                    << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
+            }else{
+                outAsm << "mul " << selectWord(v->size) << " [rsp + " <<
+                    (int)(v->stackLoc) << "]\n\t";
 
-    case tokenType::divEq:
-        outAsm << "xor rdx, rdx\n\t";
-
-        if(ptr){
-            outAsm << "mov " << selectReg("rax", v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
-
-            outAsm << "div rdi\n\t";
-
-            outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
-
-        }else{
-            outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
-                " [rsp + " << (int)(v->stackLoc) << "]\n\t";
-            
-            outAsm << "div rdi\n\t";
-
-            outAsm << "mov " << selectWord(v->size) <<
-                " [rsp + " << (int)(v->stackLoc) << "], " <<
-                selectReg("rax", v->size) << "\n\t";
+                outAsm << "mov " << selectWord(v->size) <<
+                    " [rsp + " << (int)(v->stackLoc) << "], " << 
+                    selectReg("rax", v->size) << "\n\t";
+            }
         }
         break;
 
+    case tokenType::divEq:
+        if(v->type == tokenType::_float){
+            if(ptr){
+                outAsm << "movss xmm1, [rbx]\n\t";
+                outAsm << "divss xmm1, xmm0\n\t";
+                outAsm << "movss [rbx], xmm1\n\t";
+            }else{
+                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "divss xmm1, xmm0\n\t";
+                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+            }
+        }else{
+            outAsm << "xor rdx, rdx\n\t";
+            if(ptr){
+                outAsm << "mov " << selectReg("rax", v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+                outAsm << "div rdi\n\t";
+                outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
+            }else{
+                outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
+                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                outAsm << "div rdi\n\t";
+                outAsm << "mov " << selectWord(v->size) <<
+                    " [rsp + " << (int)(v->stackLoc) << "], " <<
+                    selectReg("rax", v->size) << "\n\t";
+            }
+        } 
+        break;
+
     case tokenType::percentEq:
+        if(v->type == tokenType::_float){
+            std::cerr << "Error, cannot use modulo operator(%) on floats." << std::endl;
+            exit(1);
+        }
+
         outAsm << "xor rdx, rdx\n\t";
 
         if(ptr){
