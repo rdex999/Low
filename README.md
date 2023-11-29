@@ -34,6 +34,12 @@ Examples: \
 `char ch;` \
 `char ch = 'a';` 
 
+#### float
+Float (floating point) is a data type for fractional numbers. \
+Examples: \
+`float x;` \
+`float x = 12.1234;`
+
 ### Arrays
 You can use arrays for each type, examples: 
 ```
@@ -51,7 +57,9 @@ Usage: \
 You can also print a single character with the printChar function, example: \
 `printChar('a');` \
 And for printing integers use the function printInt, example: \
-`printInt(2345);`
+`printInt(2345);` \
+For printing a floating point (32 bit): \
+`printFloat32(13.1242, 5); // NOTE: second argument is the amount of digits to print after the point.`
 
 ### stderr
 Currently not supported.
@@ -62,46 +70,34 @@ Btw, you can use the "is" keyword instead of the == operator. \
 Examples:
 ```
 if 5 is 5{
-    printStr("true\n");
-}
-```
-```
-if 5 >= 2{
-    printStr("5 is greater that 2!\n");
-}
-```
-### else
-You can use else with an if statement, examples:
-```
-if 4 is 5{
-    printStr("4 is 5\n");
-}else{
-    printStr("4 is not five\n");
-}
-```
-
-### else if
-You can use else if with an if statement, examples:
-```
-if 4 is 5{
-    printStr("4 is 5\n");
-}else if 10 is 10{
-    printStr("10 is 10\n");
+    printStr("5 is 5\n");
+}else if 2 is 4{
+    printStr("2 is 4\n");
 }else{
     printStr("None of the above\n");
 }
 ```
 
 ## Loops
-currently only while loops are supported, there will be more in the future.
+Currently only while loops are supported, there will be more in the future.
 ### while
-syntax: `while <condition> { code; }` \
+Syntax: `while <condition> { code; }` \
 Example:
 ```
 int i = 0;
 while i < 30{
-    printNum(i);
+    printInt(i);
     printChar('\n');
     i++;
+}
+```
+
+### for
+Syntax: `for int i=0; i<10; i++ { code; }` \
+Example:
+```
+for int i=0; i<10; i++ {
+    printInt(i);
+    printChar('\n');
 }
 ```
