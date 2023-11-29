@@ -270,27 +270,54 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
 
         retIdx = genSingle(idx+2, "rbx", index);
 
-        if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-            outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
-        }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-            outAsm << "dec " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
-        }
+        if(v->type == tokenType::_float){
+            outAsm << "movss xmm0, [rbx]\n\t";
+            outAsm << "movss xmm1, [f32One]\n\t";
+            if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+                outAsm << "addss xmm0, xmm1\n\t";
+            }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+                outAsm << "subss xmm0, xmm1\n\t";
+            }
+            outAsm << "movss [rbx], xmm0\n\t";
+            if(reg && reg != (std::string)"xmm0"){
+                outAsm << "movss " << reg << ", xmm0\n\t";
+            }
 
-        if(reg){
-            outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+        }else{
+            if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+                outAsm << "inc " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+                outAsm << "dec " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            }
+            if(reg){
+                outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+            }
         }
         return retIdx;
 
     }else{
         v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx + 1).value, scopeStackLoc.size());
-        if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-            outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-            outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-        }
-
-        if(reg){
-            outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+        if(v->type == tokenType::_float){
+            outAsm << "movss xmm0, [rsp + " << v->stackLoc << "]\n\t";
+            outAsm << "movss xmm1, [f32One]\n\t";
+            if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+                outAsm << "addss xmm0, xmm1\n\t";
+            }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+                outAsm << "subss xmm0, xmm1\n\t";
+            }
+            outAsm << "movss [rsp + " << v->stackLoc << "], xmm0\n\t";
+            if(reg && reg != (std::string)"xmm0"){
+                outAsm << "movss " << reg << ", xmm0\n\t";
+            }
+        }else{
+            if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
+                outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+            }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
+                outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+            }
+            if(reg){
+                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+            }
         }
 
         return idx + 1;
@@ -340,8 +367,7 @@ inline int genAsm::genPostIncDec(int idx, const char* reg)
         if(v->type == tokenType::_float){
             if(reg){
                 outAsm << "movss " << reg << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
-                push("xmm0", 4, "", "movss");
-                push("xmm1", 4, "", "movss");
+                push(reg, 4, "", "movss");
             }
             outAsm << "movss xmm1, [f32One]\n\t";
             outAsm << "movss xmm0, [rsp + " << v->stackLoc << "]\n\t";
@@ -352,8 +378,7 @@ inline int genAsm::genPostIncDec(int idx, const char* reg)
             }
             outAsm << "movss [rsp + " << v->stackLoc << "], xmm0\n\t";
             if(reg){
-                pop("xmm0", 4, "", "movss");
-                pop("xmm1", 4, "", "movss");
+                pop(reg, 4, "", "movss");
             }
         }else{
             if(reg){
