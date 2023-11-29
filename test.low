@@ -1,4 +1,5 @@
-float x = 13.1232;
-float ptr pt = &x;
-printFloat32( *pt, 5);
+float x = 12.232321;
+float ptr y = &x;
+*y--;
+printFloat32(x, 5);
 printChar('\n');

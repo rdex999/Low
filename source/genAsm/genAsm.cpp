@@ -17,7 +17,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
 {
     this->prog = prog;
 
-    secData << "bits 64\n\nsection .data";
+    secData << "bits 64\n\nsection .data\n\tf32One: dd 1.0";
     secText << "\n\nsection .text\n\tglobal _start";
     outAsm << "\n\n_start:\n\t";
     
