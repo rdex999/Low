@@ -173,8 +173,12 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                     " [rsp + " << (int)(v->stackLoc) << "]\n\t";
             }
         }else{
-            outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
-                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+            if(type == tokenType::_float){
+                outAsm << "mov rbx, [rsp + " << v->stackLoc << "]\n\t";
+            }else{
+                outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
+                        " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+            } 
         }
 
         break;
@@ -277,17 +281,28 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             exit(1);
         }
 
-        push(reg, 8);
-        retIdx = genExpr(stmtIdx, retIdx+2);
-        outAsm << "mov rax, rdi\n\t";
-        if(oprSize != 1){
+        if(type == tokenType::_float){
+            push("rbx", 8);
+            retIdx = genExpr(stmtIdx, retIdx+2);
+            outAsm << "mov rax, rdi\n\t";
             outAsm << "mov rcx, " << oprSize << "\n\t";
             outAsm << "mul rcx\n\t";
-        }
-        pop(reg, 8);
-        outAsm << "add " << reg << ", rax\n\t";
-        if(ifPtrGetPValue){
-            outAsm << "mov " << selectReg(reg, oprSize) << ", " << selectWord(oprSize) << " [" << reg << "]\n\t";
+            pop("rbx", 8);
+            outAsm << "add rbx, rax\n\t";
+            if(ifPtrGetPValue){
+                outAsm << "movss " << reg << ", [rbx]\n\t";
+            }
+        }else{
+            push(reg, 8);
+            retIdx = genExpr(stmtIdx, retIdx+2);
+            outAsm << "mov rax, rdi\n\t";
+            outAsm << "mov rcx, " << oprSize << "\n\t";
+            outAsm << "mul rcx\n\t";
+            pop(reg, 8);
+            outAsm << "add " << reg << ", rax\n\t";
+            if(ifPtrGetPValue){
+                outAsm << "mov " << selectReg(reg, oprSize) << ", " << selectWord(oprSize) << " [" << reg << "]\n\t";
+            }
         }
     }
     return retIdx;
