@@ -37,7 +37,7 @@ inline void genAsm::genChar(int idx)
                     exit(1);
                 }
                 
-                var v = {.stackLoc = stackLoc, .size = 1, .scope = (int)scopeStackLoc.size()};
+                var v = {.stackLoc = stackLoc, .size = 1, .scope = (int)scopeStackLoc.size(), .type = tokenType::_char};
                 if(prog->sts.at(index).vals.at(i-1).type == tokenType::ptr || isArr){
                     v.ptrReadBytes = 1;
                     v.size = 8;

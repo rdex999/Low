@@ -166,11 +166,11 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
         }
         if(v->ptrReadBytes == -1){
-            if(type == tokenType::_int){
+            if(type == tokenType::_float){
+                outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
+            }else{
                 outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
                     " [rsp + " << (int)(v->stackLoc) << "]\n\t";
-            }else if(type == tokenType::_float){
-                outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
             }
         }else{
             outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<

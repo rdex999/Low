@@ -1,4 +1,13 @@
-float x = 12.232321;
-float y = ++x;
-printFloat32(y, 5);
-printChar('\n');
+int width = 20;
+char ch = '&';
+int c = 1;
+for int i=0; i<width/2; ++i{
+	for int j=0; j<width/2-i; ++j{
+    	printChar(' ');
+	}
+	for int j=0; j<c*2-1; ++j{
+    	printChar(ch);
+	}
+	++c;
+	printChar('\n');
+}

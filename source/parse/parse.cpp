@@ -45,8 +45,10 @@ inline void parse::parseSt(const token* t)
                 tokens->at(index - 1).type <= tokenType::floatLit))
             {
                 if(index+1 < tokens->size()){
-                    std::string nextTokVal = '-' + tokens->at(++index).value;
-                    st.vals.push_back(token{.type = tokens->at(index).type, .value = nextTokVal});
+                    if(tokens->at(index+1).type != tokenType::ident){
+                        std::string nextTokVal = '-' + tokens->at(++index).value;
+                        st.vals.push_back(token{.type = tokens->at(index).type, .value = nextTokVal});
+                    }
                 }else{
                     std::cerr << "Error, cannot use minus operator (-) without a value." << std::endl;
                     exit(1);
