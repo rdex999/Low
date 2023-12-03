@@ -174,7 +174,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             }
         }else{
             if(type == tokenType::_float){
-                outAsm << "mov rbx, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "mov rdi, [rsp + " << v->stackLoc << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
                         " [rsp + " << (int)(v->stackLoc) << "]\n\t";
@@ -210,16 +210,16 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                 retIdx = genPostIncDec(retIdx, reg);
 
             }else{
-                var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
+                retIdx = genSingle(retIdx+1, "rdi", stmtIdx);
                 if(oprSize != -1){
-                    oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
+                    oprSize = getOprSize(stmtIdx, retIdx+1);
                 }
 
-                outAsm << "mov " << selectReg("rbx", v->size) <<
-                    ", " << selectWord(v->size) <<" [rsp + " << v->stackLoc << "]\n\t";
-
-                outAsm << "mov " << selectReg(reg, v->ptrReadBytes) << ", "
-                    << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
+                if(type == tokenType::_float){
+                    outAsm << "movss " << reg << ", [rdi]\n\t";
+                }else{
+                    outAsm << "mov " << selectReg(reg, oprSize) << ", [rdi]\n\t";
+                }
             }
 
             break;
@@ -282,15 +282,17 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         }
 
         if(type == tokenType::_float){
-            push("rbx", 8);
+            push("rdi", 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
             outAsm << "mov rax, rdi\n\t";
             outAsm << "mov rcx, " << oprSize << "\n\t";
             outAsm << "mul rcx\n\t";
-            pop("rbx", 8);
-            outAsm << "add rbx, rax\n\t";
+            pop("rdi", 8);
+            outAsm << "add rdi, rax\n\t";
             if(ifPtrGetPValue){
-                outAsm << "movss " << reg << ", [rbx]\n\t";
+                outAsm << "movss " << reg << ", [rdi]\n\t";
+            }else if((std::string)"rdi" != reg){
+                outAsm << "mov " << reg << ", rdi\n\t";
             }
         }else{
             push(reg, 8);
