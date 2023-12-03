@@ -190,14 +190,12 @@ std::vector<token> lexer::createTokens()
 
         else if(!std::isalnum(src[index])){
             while (!std::isalnum(src[index]) && !std::isspace(src[index]) && src[index] != ';' && index < src.size()){
-                if(src[index] == '(' || src[index] == ')'){
-                    buffer += take();
+                buffer += take();
+                if(opOpenCloseCheck(index) == true || opOpenCloseCheck(index-1) == true){
                     break;
                 }
-
-                buffer += take();
             }
-
+            
             if(buffer == "//"){
                 buffer.clear();
                 while(index < src.size()){
@@ -356,4 +354,21 @@ std::vector<token> lexer::createTokens()
 inline char lexer::take()
 {
     return src.at(index++);
+}
+
+inline bool lexer::opOpenCloseCheck(size_t idx)
+{
+    switch (src[idx])
+    {
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case '{':
+    case '}':
+        return true; 
+    
+    default:
+        return false; 
+    }
 }

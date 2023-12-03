@@ -1,11 +1,11 @@
 float[20] arr;
 float offset = 3.141314;
 for int i=0; i<20; ++i{
-	arr[i] = offset;
+	arr[i]= offset;
 	offset += 0.7832;
 }
-for int i=0; i<20; ++i{
-	printFloat32(arr[i] , 10);
+for int i=0; i<20; i++{
+	printFloat32(arr[i], 10);
 	printChar('\n');
 }
 int[20] intArr;
@@ -15,6 +15,8 @@ for int i=0; i<20; ++i{
 	++intOffset;
 }
 for int i=0; i<20; ++i{
-	printInt(intArr[i] );
+	printInt(intArr[i]);
 	printChar('\n');
 }
+printInt(*(intArr));
+printChar('\n');

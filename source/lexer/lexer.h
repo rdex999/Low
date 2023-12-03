@@ -15,5 +15,7 @@ class lexer
         std::string src;
         unsigned int index = 0;
 
+        inline bool opOpenCloseCheck(size_t idx);
+
         inline char take();
 };

@@ -385,7 +385,7 @@ inline int genAsm::getOprSize(size_t stmtIdx, int idx)
             break;
 
         default:
-            return -1;
+            break; 
         }
     }
     return -1;
