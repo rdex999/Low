@@ -37,13 +37,13 @@ inline int genAsm::genFunctionCall(int idx)
         bool rdiWasUsed = false;
         for(int i = argsIdxs.size() - 1; i>=0; --i){
             retIdx = genExpr(index, argsIdxs.at(i));
-            tokenType exprType = getType(index, argsIdxs.at(i));
-            if(exprType == (tokenType)0){
+            eType exprType = getType(index, argsIdxs.at(i));
+            if(exprType.type == (tokenType)0){
                 std::cerr << "Error, unknown expresion type. Try casting to something." << std::endl;
                 exit(1);
             }
-            if(exprType == tokenType::_int || exprType == tokenType::_char){
-                switch (xmmRegistersCount)
+            if(exprType.type == tokenType::_int || exprType.type == tokenType::_char){
+                switch (regularRegistersCount)
                 {
                 case 0:
                     push("rdi", 8);
@@ -75,7 +75,7 @@ inline int genAsm::genFunctionCall(int idx)
                     break;
                 }
                 ++regularRegistersCount;
-            }else if(exprType == tokenType::_float){
+            }else if(exprType.type == tokenType::_float){
                 if(xmmRegistersCount > 0) {
                     if(xmmRegistersCount < 6){
                         outAsm << "movss xmm" << xmmRegistersCount << ", xmm0\n\t";

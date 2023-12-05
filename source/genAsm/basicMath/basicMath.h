@@ -3,8 +3,8 @@
 int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 {
     bool isPrevOp = true;
-    tokenType type = getType(stmtIdx, valsIdx);
-    if(type == (tokenType)0){
+    eType type = getType(stmtIdx, valsIdx);
+    if(type.type == (tokenType)0){
         std::cerr << "Error, no expresion type." << std::endl;
         exit(1);
     }
@@ -25,7 +25,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 push("xmm0", 4, "", "movss");
                 valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
                 pop("xmm0", 4, "", "movss");
@@ -47,7 +47,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 push("xmm0", 4, "", "movss");
                 valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
                 pop("xmm0", 4, "", "movss");
@@ -82,15 +82,15 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 //    outAsm << "mov " << selectReg("rdi", oprSize) << ", " << selectWord(oprSize) << " [rdi]\n\t";
                 //} 
                 //isPrevOp = false;
-                valsIdx = genSingle(valsIdx, type == tokenType::_float ? "xmm0" : "rdi", stmtIdx);
+                valsIdx = genSingle(valsIdx, type.type == tokenType::_float ? "xmm0" : "rdi", stmtIdx);
                 break;
             }
 
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
             }else{
                 outAsm << "mov rax, rdi\n\t";
-                valsIdx = genMulDiv(valsIdx, stmtIdx, type);
+                valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
                 outAsm << "mov rdi, rax\n\t";
             } 
             isPrevOp = true;
@@ -104,11 +104,11 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
             }else{
                 outAsm << "mov rax, rdi\n\t";
-                valsIdx = genMulDiv(valsIdx, stmtIdx, type);
+                valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
                 outAsm << "mov rdi, rax\n\t";
             }
             break;
@@ -121,13 +121,13 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 std::cerr << "Error, cannot use modulo operator (%) on floats." << std::endl;
                 exit(1);
             }
 
             outAsm << "mov rax, rdi\n\t";
-            valsIdx = genMulDiv(valsIdx, stmtIdx, type);
+            valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
             outAsm << "mov rdi, rax\n\t";
             break;
         }
@@ -149,7 +149,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
 
         default:
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 valsIdx = genSingle(valsIdx, "xmm0", stmtIdx);
             }else{
                 valsIdx = genSingle(valsIdx, "rdi", stmtIdx);

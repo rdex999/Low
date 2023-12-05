@@ -113,8 +113,8 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 {
     int retIdx = idx;
     int oprSize = -1;
-    tokenType type = getType(stmtIdx, idx);
-    if(type == (tokenType)0){
+    eType type = getType(stmtIdx, idx);
+    if(type.type == (tokenType)0){
         std::cerr << "Error, no expresion type." << std::endl;
         exit(1);
     }
@@ -166,14 +166,14 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
         }
         if(v->ptrReadBytes == -1){
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
                     " [rsp + " << (int)(v->stackLoc) << "]\n\t";
             }
         }else{
-            if(type == tokenType::_float){
+            if(type.type == tokenType::_float){
                 outAsm << "mov rdi, [rsp + " << v->stackLoc << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
@@ -215,7 +215,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                     oprSize = getOprSize(stmtIdx, retIdx+1);
                 }
 
-                if(type == tokenType::_float){
+                if(type.type == tokenType::_float){
                     outAsm << "movss " << reg << ", [rdi]\n\t";
                 }else{
                     outAsm << "mov " << selectReg(reg, oprSize) << ", [rdi]\n\t";
@@ -249,7 +249,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mul ||
         prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::div))
     {
-        if(type == tokenType::_float){
+        if(type.type == tokenType::_float){
             bool isXmm0 = true;
             if((std::string)"xmm0" != reg){
                 outAsm << "movss xmm0, " << reg << "\n\t";
@@ -281,7 +281,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             exit(1);
         }
 
-        if(type == tokenType::_float){
+        if(type.type == tokenType::_float){
             push("rdi", 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
             outAsm << "mov rax, rdi\n\t";
@@ -393,33 +393,35 @@ inline int genAsm::getOprSize(size_t stmtIdx, int idx)
     return -1;
 }
 
-inline tokenType genAsm::getType(size_t stmtIdx, int idx)
+inline eType genAsm::getType(size_t stmtIdx, int idx)
 {
     for(; idx<prog->sts.at(stmtIdx).vals.size(); ++idx){
         switch (prog->sts.at(stmtIdx).vals.at(idx).type)
         {
-        case tokenType::ident:
-            return ((var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size()))->type;
+        case tokenType::ident:{
+            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(idx).value, scopeStackLoc.size());
+            return eType{.type = v->type, .ptrReadBytes = v->ptrReadBytes};
+        }
 
         case tokenType::intLit:
-            return tokenType::_int;
+            return eType{.type = tokenType::_int};
 
         case tokenType::floatLit:
-            return tokenType::_float;
+            return eType{.type = tokenType::_float};
 
         case tokenType::quote:
-            return tokenType::_char;
+            return eType{.type = tokenType::_char};
 
         case tokenType::dQoute:
-            return tokenType::dQoute;
+            return eType{.type = tokenType::dQoute};
 
         case tokenType::singleAnd:
-            return tokenType::ptr;
+            return eType{.type = tokenType::ptr};
 
         default:
             break;
         }
     }
 
-    return (tokenType)0;
+    return eType{.type = (tokenType)0};
 }

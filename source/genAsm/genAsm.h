@@ -5,6 +5,13 @@
 #include <format>
 #include "../node/node.h"
 
+//expresion type
+struct eType
+{
+    tokenType type;
+    int ptrReadBytes = -1;
+};
+
 class genAsm
 {
     public: 
@@ -56,7 +63,7 @@ class genAsm
         inline int getOprSize(size_t stmtIdx, int idx);
 
         // @returns {tokenType} the type of the expresion. 0 if not found
-        inline tokenType getType(size_t stmtIdx, int idx);
+        inline eType getType(size_t stmtIdx, int idx);
 
         // @returns {void*} a var* to the variable in scope
         //(void* because the compiler doesnt like a normal var*)
