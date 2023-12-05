@@ -70,7 +70,7 @@ inline void genAsm::genUpdateIdent()
     switch (prog->sts.at(index).vals.at(operatorIdx).type)
     {
     case tokenType::equal:
-        if(v->type == tokenType::_float){
+        if(v->type == tokenType::_float && (v->ptrReadBytes == -1 || ptr)){
             if(ptr){
                 outAsm << "movss " << selectWord(v->ptrReadBytes) << " [rbx], xmm0\n\t";
             }else{
@@ -81,8 +81,7 @@ inline void genAsm::genUpdateIdent()
             if(ptr){
                 outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
             }else{
-                outAsm << "mov " << selectWord(v->size) << " [rsp + " <<
-                    (int)(v->stackLoc) << "], " <<
+                outAsm << "mov " << selectWord(v->size) << " [rsp + " << (int)(v->stackLoc) << "], " <<
                     selectReg("rdi", v->size) << "\n\t";
             }
         }
@@ -118,7 +117,7 @@ inline void genAsm::genUpdateIdent()
         break;
 
     case tokenType::addEq:
-        if(v->type == tokenType::_float){
+        if(v->type == tokenType::_float && v->ptrReadBytes == -1){
             if(ptr){
                 outAsm << "movss xmm1, [rbx]\n\t";
                 outAsm << "addss xmm1, xmm0\n\t";
@@ -141,7 +140,7 @@ inline void genAsm::genUpdateIdent()
         break;
     
     case tokenType::subEq:
-        if(v->type == tokenType::_float){
+        if(v->type == tokenType::_float && v->ptrReadBytes == -1){
             if(ptr){
                 outAsm << "movss xmm1, [rbx]\n\t";
                 outAsm << "subss xmm1, xmm0\n\t";
@@ -164,7 +163,7 @@ inline void genAsm::genUpdateIdent()
         break;
     
     case tokenType::mulEq:
-        if(v->type == tokenType::_float){
+        if(v->type == tokenType::_float && v->ptrReadBytes == -1){
             if(ptr){
                 outAsm << "movss xmm1, [rbx]\n\t";
                 outAsm << "mulss xmm1, xmm0\n\t";
@@ -193,7 +192,7 @@ inline void genAsm::genUpdateIdent()
         break;
 
     case tokenType::divEq:
-        if(v->type == tokenType::_float){
+        if(v->type == tokenType::_float && v->ptrReadBytes == -1){
             if(ptr){
                 outAsm << "movss xmm1, [rbx]\n\t";
                 outAsm << "divss xmm1, xmm0\n\t";

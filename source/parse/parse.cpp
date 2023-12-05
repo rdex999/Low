@@ -41,8 +41,8 @@ inline void parse::parseSt(const token* t)
             break;
 
         case tokenType::sub:
-            if(!(index - 1 >= 0 && tokens->at(index - 1).type >= tokenType::intLit &&
-                tokens->at(index - 1).type <= tokenType::floatLit))
+            if(index - 1 >= 0 && (tokens->at(index - 1).type < tokenType::intLit ||
+                tokens->at(index - 1).type > tokenType::floatLit) && tokens->at(index - 1).type != tokenType::ident)
             {
                 if(index+1 < tokens->size()){
                     if(tokens->at(index+1).type != tokenType::ident){

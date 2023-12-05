@@ -1,12 +1,12 @@
 float[20] arr;
 arr[0] = 13.1234;
 arr[1] = 42.5831;
-printFloat32(*(arr + 4), 10);
-
+arr += 4;
+printFloat32(arr[0], 10);
 printChar('\n');
-float x = 12.1232;
-float ptr pt = &x;
-printFloat32(*pt, 10);
+float ptr x = 642362;
+x = 12321;
+printInt(x);
 printChar('\n');
 
 int[10] xs;
@@ -14,5 +14,9 @@ xs[0] = 432;
 xs[1] = 123;
 printInt(xs[0]);
 printChar('\n');
-printInt(*(xs+4));
+xs += 8;
+printInt(*(xs - 4));
 printChar('\n');
+int test = 321 + -5;
+printInt(test);
+printChar(10);
