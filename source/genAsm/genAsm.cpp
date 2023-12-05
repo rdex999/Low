@@ -112,7 +112,6 @@ void genAsm::genStmt()
 int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec, bool ifPtrGetPValue)
 {
     int retIdx = idx;
-    int oprSize = -1;
     eType type = getType(stmtIdx, idx);
     if(type.type == (tokenType)0){
         std::cerr << "Error, no expresion type." << std::endl;
@@ -162,9 +161,6 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     case tokenType::ident:{
 
         var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(retIdx).value), scopeStackLoc.size());
-        if(oprSize == -1){
-            oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
-        }
         if(v->ptrReadBytes == -1){
             if(type.type == tokenType::_float){
                 outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
@@ -187,10 +183,6 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     case tokenType::singleAnd:{
         if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
             var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
-            if(oprSize == -1){
-                oprSize = v->ptrReadBytes != -1 ? v->ptrReadBytes : v->size;
-            }
-
             outAsm << "lea " << selectReg(reg, 8) << ", [rsp + " << v->stackLoc << "]\n\t";
 
         }else{
@@ -211,14 +203,11 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
             }else{
                 retIdx = genSingle(retIdx+1, "rdi", stmtIdx);
-                if(oprSize != -1){
-                    oprSize = getOprSize(stmtIdx, retIdx+1);
-                }
 
                 if(type.type == tokenType::_float){
                     outAsm << "movss " << reg << ", [rdi]\n\t";
                 }else{
-                    outAsm << "mov " << selectReg(reg, oprSize) << ", [rdi]\n\t";
+                    outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rdi]\n\t";
                 }
             }
 
@@ -276,7 +265,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     if(retIdx + 1 < prog->sts.at(stmtIdx).vals.size() &&
         prog->sts.at(stmtIdx).vals.at(retIdx+1).type == tokenType::bracketOpen)
     {
-        if(oprSize == -1){
+        if(type.ptrReadBytes == -1){
             std::cerr << "Error, must specify data type to use index operator ( [] ).\nNote: You can do this \"*(var+offset)\"" << std::endl;
             exit(1);
         }
@@ -285,7 +274,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             push("rdi", 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
             outAsm << "mov rax, rdi\n\t";
-            outAsm << "mov rcx, " << oprSize << "\n\t";
+            outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
             pop("rdi", 8);
             outAsm << "add rdi, rax\n\t";
@@ -298,12 +287,12 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             push(reg, 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
             outAsm << "mov rax, rdi\n\t";
-            outAsm << "mov rcx, " << oprSize << "\n\t";
+            outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
             pop(reg, 8);
             outAsm << "add " << reg << ", rax\n\t";
             if(ifPtrGetPValue){
-                outAsm << "mov " << selectReg(reg, oprSize) << ", " << selectWord(oprSize) << " [" << reg << "]\n\t";
+                outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [" << reg << "]\n\t";
             }
         }
     }

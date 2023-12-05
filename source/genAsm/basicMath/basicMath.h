@@ -25,7 +25,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type.type == tokenType::_float){
+            if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
                 valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
                 pop("xmm0", 4, "", "movss");
@@ -47,7 +47,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            if(type.type == tokenType::_float){
+            if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
                 valsIdx = genSingle(valsIdx + 1, "xmm1", stmtIdx);
                 pop("xmm0", 4, "", "movss");
