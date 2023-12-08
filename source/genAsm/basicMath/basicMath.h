@@ -70,18 +70,6 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                //int oprSize = getOprSize(stmtIdx, valsIdx+1);
-                //if(oprSize == -1){
-                //    std::cerr << "Error, unknows pointer read size. Try casting to a data type." << std::endl;
-                //    exit(1);
-                //}
-                //valsIdx = genSingle(valsIdx+1, "rdi", stmtIdx);
-                //if(type == tokenType::_float){
-                //    outAsm << "movss xmm0, DWORD [rdi]\n\t";
-                //}else{
-                //    outAsm << "mov " << selectReg("rdi", oprSize) << ", " << selectWord(oprSize) << " [rdi]\n\t";
-                //} 
-                //isPrevOp = false;
                 valsIdx = genSingle(valsIdx, type.type == tokenType::_float ? "xmm0" : "rdi", stmtIdx);
                 break;
             }

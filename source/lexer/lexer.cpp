@@ -176,137 +176,40 @@ std::vector<token> lexer::createTokens()
                 continue;
             }
 
-            else if(buffer == "+="){
-                tokens.push_back(token{.type = tokenType::addEq});
-            }
+            if(addKeyword("+=", tokenType::addEq)){ continue; }
+            if(addKeyword("-=", tokenType::subEq)){ continue; }
+            if(addKeyword("*=", tokenType::mulEq)){ continue; }
+            if(addKeyword("/=", tokenType::divEq)){ continue; }
+            if(addKeyword("++", tokenType::pp)){ continue; }
+            if(addKeyword("--", tokenType::mm)){ continue; }
+            if(addKeyword("%=", tokenType::percentEq)){ continue; }
+            if(addKeyword("=", tokenType::equal)){ continue; }
+            if(addKeyword("+", tokenType::add)){ continue; }
+            if(addKeyword("-", tokenType::sub)){ continue; }
+            if(addKeyword("*", tokenType::mul)){ continue; }
+            if(addKeyword("/", tokenType::div)){ continue; }
+            if(addKeyword("%", tokenType::percent)){ continue; }
+            if(addKeyword("&", tokenType::singleAnd)){ continue; }
+            if(addKeyword("(", tokenType::parenOpen)){ continue; }
+            if(addKeyword(")", tokenType::parenClose)){ continue; }
+            if(addKeyword("{", tokenType::curlyOpen)){ continue; }
+            if(addKeyword("}", tokenType::curlyClose)){ continue; }
+            if(addKeyword("==", tokenType::bEqual)){ continue; }
+            if(addKeyword("!=", tokenType::bNotEq)){ continue; }
+            if(addKeyword("&&", tokenType::_and)){ continue; }
+            if(addKeyword("||", tokenType::_or)){ continue; }
+            if(addKeyword(">", tokenType::g)){ continue; }
+            if(addKeyword(">=", tokenType::gEq)){ continue; }
+            if(addKeyword("<", tokenType::l)){ continue; }
+            if(addKeyword("<=", tokenType::lEq)){ continue; }
+            if(addKeyword("!", tokenType::bNot)){ continue; }
+            if(addKeyword("[", tokenType::bracketOpen)){ continue; }
+            if(addKeyword("]", tokenType::bracketClose)){ continue; }
+            if(addKeyword(",", tokenType::comma)){ continue; }
+            if(addKeyword(":", tokenType::colon)){ continue; }
 
-            else if(buffer == "-="){
-                tokens.push_back(token{.type = tokenType::subEq});
-            }
-
-            else if(buffer == "*="){
-                tokens.push_back(token{.type = tokenType::mulEq});
-            }
-
-            else if(buffer == "/="){
-                tokens.push_back(token{.type = tokenType::divEq});
-            }
-
-            else if(buffer == "++"){
-                tokens.push_back(token{.type = tokenType::pp});
-            }
-
-            else if(buffer == "--"){
-                tokens.push_back(token{.type = tokenType::mm});
-            }
-
-            else if(buffer == "%="){
-                tokens.push_back(token{.type = tokenType::percentEq});
-            }
-
-            else if(buffer == "="){
-                tokens.push_back(token{.type = tokenType::equal});
-            }
-
-            else if(buffer == "+"){
-                tokens.push_back(token{.type = tokenType::add});
-            }
-
-            else if(buffer == "-"){
-                tokens.push_back(token{.type = tokenType::sub});
-            }
-
-            else if(buffer == "*"){
-                tokens.push_back(token{.type = tokenType::mul});
-            }
-
-            else if(buffer == "/"){
-                tokens.push_back(token{.type = tokenType::div});
-            }
-
-            else if(buffer == "%"){
-                tokens.push_back(token{.type = tokenType::percent});
-            }
-
-            else if(buffer == "&"){
-                tokens.push_back(token{.type = tokenType::singleAnd});
-            }
-
-            else if(buffer == "("){
-                tokens.push_back(token{.type = tokenType::parenOpen});
-            }
-
-            else if(buffer == ")"){
-                tokens.push_back(token{.type = tokenType::parenClose});
-            }
-
-            else if(buffer == "{"){
-                tokens.push_back(token{.type = tokenType::curlyOpen});
-            }
-
-            else if(buffer == "}"){
-                tokens.push_back(token{.type = tokenType::curlyClose});
-            }
-
-            else if(buffer == "=="){
-                tokens.push_back(token{.type = tokenType::bEqual});
-            }
-
-            else if(buffer == "!="){
-                tokens.push_back(token{.type = tokenType::bNotEq});
-            }
-
-            else if(buffer == "&&"){
-                tokens.push_back(token{.type = tokenType::_and});
-            }
-
-            else if(buffer == "||"){
-                tokens.push_back(token{.type = tokenType::_or});
-            }
-
-            else if(buffer == ">"){
-                tokens.push_back(token{.type = tokenType::g});
-            }
-
-            else if(buffer == ">="){
-                tokens.push_back(token{.type = tokenType::gEq});
-            }
-
-            else if(buffer == "<"){
-                tokens.push_back(token{.type = tokenType::l});
-            }
-
-            else if(buffer == "<="){
-                tokens.push_back(token{.type = tokenType::lEq});
-            }
-
-            else if(buffer == "!"){
-                tokens.push_back(token{.type = tokenType::bNot});
-            }
-
-            else if(buffer == "["){
-                tokens.push_back(token{.type = tokenType::bracketOpen});
-            }
-
-            else if(buffer == "]"){
-                tokens.push_back(token{.type = tokenType::bracketClose});
-            }
-
-            else if(buffer == ","){
-                tokens.push_back(token{.type = tokenType::comma});
-            }
-
-            else if(buffer == ":"){
-                tokens.push_back(token{.type = tokenType::colon});
-            }
-
-            else{
-                std::cerr << "Error, not a valid operator '" << buffer << "'." << std::endl;
-                exit(1);
-            }
-
-            buffer.clear();
-            continue;
+            std::cerr << "Error, not a valid operator '" << buffer << "'." << std::endl;
+            exit(1);
         }
 
         else{

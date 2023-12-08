@@ -20,3 +20,6 @@ printChar('\n');
 int test = 321 + -5;
 printInt(test);
 printChar(10);
+int a = 20 + (3 % 2) * 3;
+printInt(a);
+printChar(10);
