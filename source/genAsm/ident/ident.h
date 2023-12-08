@@ -74,14 +74,14 @@ inline void genAsm::genUpdateIdent()
             if(ptr){
                 outAsm << "movss " << selectWord(v->ptrReadBytes) << " [rbx], xmm0\n\t";
             }else{
-                outAsm << "movss " << selectWord(v->size) << " [rsp + " <<
+                outAsm << "movss " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "], xmm0\n\t";
             }
         }else{
             if(ptr){
                 outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
             }else{
-                outAsm << "mov " << selectWord(v->size) << " [rsp + " << (int)(v->stackLoc) << "], " <<
+                outAsm << "mov " << selectWord(v->size) << " [rbp - " << (int)(v->stackLoc) << "], " <<
                     selectReg("rdi", v->size) << "\n\t";
             }
         }
@@ -123,16 +123,16 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "addss xmm1, xmm0\n\t";
                 outAsm << "movss [rbx], xmm1\n\t";
             }else{
-                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "movss xmm1, [rbp - " << v->stackLoc << "]\n\t";
                 outAsm << "addss xmm1, xmm0\n\t";
-                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+                outAsm << "movss [rbp - " << v->stackLoc << "], xmm1\n\t";
             }
         }else{
             if(ptr){
                 outAsm << "add " << selectWord(v->ptrReadBytes) <<
                     " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
             }else{
-                outAsm << "add " << selectWord(v->size) << " [rsp + " <<
+                outAsm << "add " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "], " <<
                     selectReg("rdi", v->size) << "\n\t";
             }
@@ -146,16 +146,16 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "subss xmm1, xmm0\n\t";
                 outAsm << "movss [rbx], xmm1\n\t";
             }else{
-                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "movss xmm1, [rbp - " << v->stackLoc << "]\n\t";
                 outAsm << "subss xmm1, xmm0\n\t";
-                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+                outAsm << "movss [rbp - " << v->stackLoc << "], xmm1\n\t";
             }
         }else{
             if(ptr){
                 outAsm << "sub " << selectWord(v->ptrReadBytes) <<
                     " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
             }else{
-                outAsm << "sub " << selectWord(v->size) << " [rsp + " <<
+                outAsm << "sub " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "], " <<
                     selectReg("rdi", v->size) << "\n\t";
             }
@@ -169,9 +169,9 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "mulss xmm1, xmm0\n\t";
                 outAsm << "movss [rbx], xmm1\n\t";
             }else{
-                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "movss xmm1, [rbp - " << v->stackLoc << "]\n\t";
                 outAsm << "mulss xmm1, xmm0\n\t";
-                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+                outAsm << "movss [rbp - " << v->stackLoc << "], xmm1\n\t";
             }
         }else{
             outAsm << "mov rax, rdi\n\t";
@@ -181,11 +181,11 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "mov " << selectWord(v->ptrReadBytes)
                     << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
-                outAsm << "mul " << selectWord(v->size) << " [rsp + " <<
+                outAsm << "mul " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "]\n\t";
 
                 outAsm << "mov " << selectWord(v->size) <<
-                    " [rsp + " << (int)(v->stackLoc) << "], " << 
+                    " [rbp - " << (int)(v->stackLoc) << "], " << 
                     selectReg("rax", v->size) << "\n\t";
             }
         }
@@ -198,9 +198,9 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "divss xmm1, xmm0\n\t";
                 outAsm << "movss [rbx], xmm1\n\t";
             }else{
-                outAsm << "movss xmm1, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "movss xmm1, [rbp - " << v->stackLoc << "]\n\t";
                 outAsm << "divss xmm1, xmm0\n\t";
-                outAsm << "movss [rsp + " << v->stackLoc << "], xmm1\n\t";
+                outAsm << "movss [rbp - " << v->stackLoc << "], xmm1\n\t";
             }
         }else{
             outAsm << "xor rdx, rdx\n\t";
@@ -210,10 +210,10 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
                 outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
-                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                    " [rbp - " << (int)(v->stackLoc) << "]\n\t";
                 outAsm << "div rdi\n\t";
                 outAsm << "mov " << selectWord(v->size) <<
-                    " [rsp + " << (int)(v->stackLoc) << "], " <<
+                    " [rbp - " << (int)(v->stackLoc) << "], " <<
                     selectReg("rax", v->size) << "\n\t";
             }
         } 
@@ -238,12 +238,12 @@ inline void genAsm::genUpdateIdent()
 
         }else{
             outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
-                " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                " [rbp - " << (int)(v->stackLoc) << "]\n\t";
 
             outAsm << "div rdi\n\t";
 
             outAsm << "mov " << selectWord(v->size) <<
-                " [rsp + " << (int)(v->stackLoc) << "], " <<
+                " [rbp - " << (int)(v->stackLoc) << "], " <<
                 selectReg("rdx", v->size) << "\n\t";
         } 
         break;
@@ -297,25 +297,25 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
     }else{
         v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx + 1).value, scopeStackLoc.size());
         if(v->type == tokenType::_float){
-            outAsm << "movss xmm0, [rsp + " << v->stackLoc << "]\n\t";
+            outAsm << "movss xmm0, [rbp - " << v->stackLoc << "]\n\t";
             outAsm << "movss xmm1, [f32One]\n\t";
             if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
                 outAsm << "addss xmm0, xmm1\n\t";
             }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
                 outAsm << "subss xmm0, xmm1\n\t";
             }
-            outAsm << "movss [rsp + " << v->stackLoc << "], xmm0\n\t";
+            outAsm << "movss [rbp - " << v->stackLoc << "], xmm0\n\t";
             if(reg && reg != (std::string)"xmm0"){
                 outAsm << "movss " << reg << ", xmm0\n\t";
             }
         }else{
             if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
-                outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "inc " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }else if(prog->sts.at(index).vals.at(idx).type == tokenType::mm){
-                outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "dec " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }
             if(reg){
-                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }
         }
 
@@ -329,7 +329,7 @@ inline int genAsm::genPostIncDec(int idx, const char* reg)
     if(prog->sts.at(index).vals.at(idx).type == tokenType::mul){
         v = (var*)varAccessible(&prog->sts.at(index).vals.at(idx+1).value, scopeStackLoc.size());
 
-        outAsm << "mov rbx, QWORD [rsp + " << v->stackLoc << "]\n\t";
+        outAsm << "mov rbx, QWORD [rbp - " << v->stackLoc << "]\n\t";
 
         if(v->type == tokenType::_float){
             if(reg){
@@ -365,28 +365,28 @@ inline int genAsm::genPostIncDec(int idx, const char* reg)
 
         if(v->type == tokenType::_float){
             if(reg){
-                outAsm << "movss " << reg << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "movss " << reg << ", " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
                 push(reg, 4, "", "movss");
             }
             outAsm << "movss xmm1, [f32One]\n\t";
-            outAsm << "movss xmm0, [rsp + " << v->stackLoc << "]\n\t";
+            outAsm << "movss xmm0, [rbp - " << v->stackLoc << "]\n\t";
             if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::pp){
                 outAsm << "addss xmm0, xmm1\n\t";
             }else if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::mm){
                 outAsm << "subss xmm0, xmm1\n\t";
             }
-            outAsm << "movss [rsp + " << v->stackLoc << "], xmm0\n\t";
+            outAsm << "movss [rbp - " << v->stackLoc << "], xmm0\n\t";
             if(reg){
                 pop(reg, 4, "", "movss");
             }
         }else{
             if(reg){
-                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }
             if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::pp){
-                outAsm << "inc " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "inc " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }else if(prog->sts.at(index).vals.at(idx + 1).type == tokenType::mm){
-                outAsm << "dec " << selectWord(v->size) << " [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "dec " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";
             }
         }
     

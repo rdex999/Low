@@ -42,6 +42,7 @@ inline void genAsm::genChar(int idx)
                     v.ptrReadBytes = 1;
                     v.size = 8;
                 }
+                v.stackLoc += v.size;
 
                 vars.insert({prog->sts.at(index).vals.at(i).value, v});
                 if(i+1 < prog->sts.at(index).vals.size() &&
@@ -57,7 +58,7 @@ inline void genAsm::genChar(int idx)
                     }
                 }else{ // char ch;
                     if(isArr){
-                        outAsm << "lea rax, [rsp + " << stackLoc + 8 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

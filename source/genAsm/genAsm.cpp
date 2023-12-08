@@ -19,7 +19,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
 
     secData << "bits 64\n\nsection .data\n\tf32One: dd 1.0";
     secText << "\n\nsection .text\n\tglobal _start";
-    outAsm << "\n\n_start:\n\t";
+    outAsm << "\n\n_start:\n\tpush rbp\n\tmov rbp, rsp\n\tsub rsp, 16\n\n\t";
     
     if(lowStdLib){
         addStdLibFunc("printStr");
@@ -34,7 +34,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
         genStmt();
     }
 
-    outAsm << "mov rax, 60\n\tmov rdi, 0\n\tsyscall";
+    outAsm << "mov rax, 60\n\txor rdi, rdi\n\tsyscall";
 
     finalAsm << secData.str() << secText.str() << outAsm.str();
 }
@@ -135,7 +135,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     switch (prog->sts.at(stmtIdx).vals.at(retIdx).type)
     {
     case tokenType::intLit:
-        outAsm << "mov " << selectReg(reg, 4) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
+        outAsm << "mov " << reg << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
         break;
 
     case tokenType::floatLit:{
@@ -163,17 +163,17 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(retIdx).value), scopeStackLoc.size());
         if(v->ptrReadBytes == -1){
             if(type.type == tokenType::_float){
-                outAsm << "movss " << reg << ", [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                outAsm << "movss " << reg << ", [rbp - " << (int)(v->stackLoc) << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, v->size) << ", " << selectWord(v->size) <<
-                    " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                    " [rbp - " << (int)(v->stackLoc) << "]\n\t";
             }
         }else{
             if(type.type == tokenType::_float){
-                outAsm << "mov rdi, [rsp + " << v->stackLoc << "]\n\t";
+                outAsm << "mov rdi, [rbp - " << v->stackLoc << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
-                        " [rsp + " << (int)(v->stackLoc) << "]\n\t";
+                        " [rbp - " << (int)(v->stackLoc) << "]\n\t";
             } 
         }
 
@@ -183,7 +183,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     case tokenType::singleAnd:{
         if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
             var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
-            outAsm << "lea " << selectReg(reg, 8) << ", [rsp + " << v->stackLoc << "]\n\t";
+            outAsm << "lea " << selectReg(reg, 8) << ", [rbp - " << v->stackLoc << "]\n\t";
 
         }else{
             std::cerr << "Error, cannot use address of operator(&) without a value." << std::endl;

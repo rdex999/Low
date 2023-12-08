@@ -2,14 +2,14 @@
 
 void genAsm::push(const char *reg, int size, const char *word, const char* mov)
 {
-    outAsm << mov << " " << word << " [rsp + " << stackLoc << "], " << reg << "\n\t";
     stackLoc += size;
+    outAsm << mov << " " << word << " [rbp - " << stackLoc << "], " << reg << "\n\t";
 }
 
 void genAsm::pop(const char *reg, int size, const char* word, const char* mov)
 {
+    outAsm << mov << " " << reg << ", " << word << "[rbp - " << stackLoc << "]\n\t";
     stackLoc -= size;
-    outAsm << mov << " " << reg << ", " << word << "[rsp + " << stackLoc << "]\n\t";
 }
 
 inline void genAsm::genCurly(int idx, bool isFromElse)

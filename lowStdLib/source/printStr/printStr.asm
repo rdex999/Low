@@ -4,17 +4,24 @@ section .text
 ; a function to print a string to the standart output stream.
 ; params: const char* -> a zero terminated string
 printStr:
+    ;push rbp
+    ;mov rbp, rsp
+
     xor rdx, rdx
-    mov rsi, rdi
+    mov rdx, rdi
 
 printStrCountLoop:
-    mov al, [rdi]
-    inc rdi
+    mov al, [rdx]
     inc rdx
-    cmp al, 0
-    jne printStrCountLoop
+    test al, al
+    jnz printStrCountLoop
 
     mov rax, 1
+    sub rdx, rdi
+    dec rdx 
+    mov rsi, rdi 
     mov rdi, 1
     syscall
+
+    ;pop rbp
     ret

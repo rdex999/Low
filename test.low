@@ -1,25 +1,17 @@
-float[20] arr;
-arr[0] = 13.1234;
-arr[1] = 42.5831;
-arr += 4;
-printFloat32(arr[0], 10);
-printChar('\n');
-float ptr x = 642362;
-x = 12321;
-printInt(x);
-printChar('\n');
-
-int[10] xs;
-xs[0] = 432;
-xs[1] = 123;
+int[20] xs;
+xs[0] = 1234567890;
+xs[1] = -5432167;
 printInt(xs[0]);
 printChar('\n');
-xs += 8;
-printInt(*(xs - 4));
+printInt(xs[1]);
 printChar('\n');
-int test = 321 + -5;
-printInt(test);
-printChar(10);
-int a = 20 + (3 % 2) * 3;
-printInt(a);
+printChar('\n');
+for int i = 0; i<2; i++{
+    printInt(xs[i]);
+    printChar(10);
+}
+printStr("Hello world!\n");
+int y = 4002;
+int ptr p = &y;
+printInt(*p);
 printChar(10);

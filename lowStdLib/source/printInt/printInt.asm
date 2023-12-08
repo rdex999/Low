@@ -7,44 +7,52 @@ section .text
 ; argument 0: the integer to print (rdi)
 ; argument 1: (given by the compiler) the current location on the stack. (rsi)
 printInt:
-    add rsi, 10 ; alloc 10 bytes
-    mov [rsi], edi ; push rdi
-    shr edi, 31
-    jz posInt   ; jump if rdi is positive
+    push rbp
+    mov rbp, rsp
+    sub rsp, 14 ; alloc 14 bytes
 
-    dec rsi
+    mov [rbp - 4], edi
+    shr edi, 31
+    jz printIntPosInit ; jump if edi is positive
+
+    lea rsi, [rbp - 5]
     mov BYTE [rsi], '-'
     mov rax, 1
     mov rdi, 1
     mov rdx, 1
     syscall
 
-    inc rsi
-    mov eax, [rsi]
-    mov edi, -1
-    mul edi
+    mov eax, [rbp - 4]
+    mov ebx, -1
+    mul ebx
+    xor rcx, rcx 
+    lea rsi, [rbp - 5]
+    jmp printIntLoop
+
+
+printIntPosInit:
     xor rcx, rcx
-    jmp printNumLoop
+    lea rsi, [rbp - 5]
+    mov eax, [rbp - 4]
 
-
-posInt:
-    mov eax, [rsi] ; pop to rax
-    xor rcx, rcx
-
-printNumLoop:
+printIntLoop:
+    mov ebx, 10
     xor rdx, rdx
-    mov edi, 10
-    div edi
+    div ebx
     add dl, 48
     mov [rsi], dl
-    dec rsi
     inc rcx
-    cmp eax, 0
-    jne printNumLoop
+    dec rsi
+    test eax, eax
+    jnz printIntLoop
 
     mov rax, 1
     mov rdi, 1
-    inc rsi
     mov rdx, rcx
+    inc rsi
     syscall
+
+    ;mov rsp, rbp
+    ;pop rbp
+    leave 
     ret
