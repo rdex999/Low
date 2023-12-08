@@ -6,10 +6,20 @@ lexer::lexer(std::string src)
     index = 0;
 }
 
+inline bool lexer::addKeyword(const char* keyword, tokenType tok)
+{
+    if(buffer == keyword){
+        tokens.push_back(token{.type = tok});
+        buffer.clear();
+        return true;
+    }
+    return false;
+}
+
 std::vector<token> lexer::createTokens()
 {
-    std::string buffer;
-    std::vector<token> tokens;
+    buffer.clear();
+    tokens.clear();
     for(index = 0; index < src.size();) 
     {
         if(std::isalpha(src[index])){
@@ -18,61 +28,20 @@ std::vector<token> lexer::createTokens()
             }
 
             // keyword detection
-            if(buffer == "exit"){
-                tokens.push_back(token{.type = tokenType::_exit});
-            }
-
-            else if(buffer == "int"){
-                tokens.push_back(token{.type = tokenType::_int});
-            }
-            
-            else if(buffer == "char"){
-                tokens.push_back(token{.type = tokenType::_char});
-            }
-
-            else if(buffer == "float"){
-                tokens.push_back(token{.type = tokenType::_float});
-            }
-
-            else if(buffer == "ptr"){
-                tokens.push_back(token{.type = tokenType::ptr});
-            }
-            
-            else if(buffer == "while"){
-                tokens.push_back(token{.type = tokenType::_while});
-            }
-
-            else if(buffer == "for"){
-                tokens.push_back(token{.type = tokenType::_for});
-            }
-
-            else if(buffer == "goto"){
-                tokens.push_back(token{.type = tokenType::_goto});
-            }
-
-            else if(buffer == "if"){
-                tokens.push_back(token{.type = tokenType::_if});
-            }
-
-            else if(buffer == "is"){
-                tokens.push_back(token{.type = tokenType::bEqual});
-            }
-
-            else if(buffer == "else"){
-                tokens.push_back(token{.type = tokenType::_else});
-            }
-
-            else if(buffer == "and"){
-                tokens.push_back(token{.type = tokenType::_and});
-            }
-
-            else if(buffer == "or"){
-                tokens.push_back(token{.type = tokenType::_or});
-            }
-
-            else{
-                tokens.push_back(token{.type = tokenType::ident, .value = buffer});
-            }
+            if(addKeyword("exit", tokenType::_exit)){ continue; }
+            if(addKeyword("int", tokenType::_int)){ continue; }
+            if(addKeyword("char", tokenType::_char)){ continue; }
+            if(addKeyword("float", tokenType::_float)){ continue; }
+            if(addKeyword("ptr", tokenType::ptr)){ continue; }
+            if(addKeyword("while", tokenType::_while)){ continue; }
+            if(addKeyword("for", tokenType::_for)){ continue; }
+            if(addKeyword("goto", tokenType::_goto)){ continue; }
+            if(addKeyword("if", tokenType::_if)){ continue; }
+            if(addKeyword("is", tokenType::bEqual)){ continue; }
+            if(addKeyword("else", tokenType::_else)){ continue; }
+            if(addKeyword("and", tokenType::_and)){ continue; }
+            if(addKeyword("or", tokenType::_or)){ continue; }
+            tokens.push_back(token{.type = tokenType::ident, .value = buffer});
             buffer.clear();
             continue;
 

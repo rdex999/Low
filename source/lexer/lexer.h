@@ -13,9 +13,11 @@ class lexer
 
     private:
         std::string src;
+        std::string buffer;
         unsigned int index = 0;
+        std::vector<token> tokens;
 
         inline bool opOpenCloseCheck(size_t idx);
-
+        inline bool addKeyword(const char* keyword, tokenType tok);
         inline char take();
 };
