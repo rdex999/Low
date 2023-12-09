@@ -8,6 +8,61 @@ parse::parse(const std::vector<token>* tokens)
     {
         parseSt(&tokens->at(index));
     }
+
+    setMainStackSize();
+}
+
+inline void parse::setMainStackSize()
+{
+    for(int idx=0; idx < prog.sts.size(); ++idx){
+        if(prog.sts.at(idx).vals.size() > 0){
+            if(1 < prog.sts.at(idx).vals.size() && prog.sts.at(idx).vals.at(0).type >= tokenType::_int && prog.sts.at(idx).vals.at(0).type <= tokenType::_char){
+                if(prog.sts.at(idx).vals.at(1).type == tokenType::ptr){
+                    if(3 < prog.sts.at(idx).vals.size() && prog.sts.at(idx).vals.at(2).type == tokenType::bracketOpen){
+                        prog.mainStackSize += 8 + 8 * std::stoi(prog.sts.at(idx).vals.at(3).value);
+                        continue;
+                    }else{
+                        prog.mainStackSize += 8;
+                        continue;
+                    }
+                }else if(2 < prog.sts.at(idx).vals.size() && prog.sts.at(idx).vals.at(1).type == tokenType::bracketOpen){
+                    prog.mainStackSize += 8 + selectSize(prog.sts.at(idx).vals.at(0).type) * std::stoi(prog.sts.at(idx).vals.at(2).value);
+                    continue;
+                }
+            }
+            switch (prog.sts.at(idx).vals.at(0).type)
+            {
+            case tokenType::_int:
+            case tokenType::_float:
+                prog.mainStackSize += 4; 
+                break;
+
+            case tokenType::_char:
+                ++prog.mainStackSize;
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+}
+
+inline uint parse::selectSize(tokenType tok)
+{
+    switch (tok)
+    {
+    case tokenType::_float:
+    case tokenType::_int:
+        return 4;
+
+    case tokenType::_char:
+        return 1;
+
+    default:
+        std::cerr << "PROGRAM ERROR, not valid token for selectSize."  << std::endl;
+        exit(1);
+    }
 }
 
 inline void parse::parseSt(const token* t)

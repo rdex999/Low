@@ -13,5 +13,8 @@ class parse
         size_t index = 0;
         const std::vector<token>* tokens;
 
+        inline void setMainStackSize();
+
         inline void parseSt(const token* t);
+        inline uint selectSize(tokenType tok);
 };

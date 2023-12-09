@@ -31,10 +31,10 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 pop("xmm0", 4, "", "movss");
                 outAsm << "addss xmm0, xmm1\n\t";
             }else{
-                push("rdi", 8);
+                push("rax", 8);
                 valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
-                pop("rdi", 8);
-                outAsm << "add rdi, rbx\n\t";
+                pop("rax", 8);
+                outAsm << "add rax, rbx\n\t";
             }
 
             break;
@@ -53,10 +53,10 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 pop("xmm0", 4, "", "movss");
                 outAsm << "subss xmm0, xmm1\n\t";
             }else{
-                push("rdi", 8);
+                push("rax", 8);
                 valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
-                pop("rdi", 8);
-                outAsm << "sub rdi, rbx\n\t";
+                pop("rax", 8);
+                outAsm << "sub rax, rbx\n\t";
             }
 
             break;
@@ -70,16 +70,14 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                valsIdx = genSingle(valsIdx, type.type == tokenType::_float ? "xmm0" : "rdi", stmtIdx);
+                valsIdx = genSingle(valsIdx, type.type == tokenType::_float ? "xmm0" : "rax", stmtIdx);
                 break;
             }
 
             if(type.type == tokenType::_float){
                 valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
             }else{
-                outAsm << "mov rax, rdi\n\t";
                 valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
-                outAsm << "mov rdi, rax\n\t";
             } 
             isPrevOp = true;
             break;
@@ -95,9 +93,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             if(type.type == tokenType::_float){
                 valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
             }else{
-                outAsm << "mov rax, rdi\n\t";
                 valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
-                outAsm << "mov rdi, rax\n\t";
             }
             break;
         }
@@ -114,9 +110,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            outAsm << "mov rax, rdi\n\t";
             valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
-            outAsm << "mov rdi, rax\n\t";
             break;
         }
 
@@ -140,7 +134,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
             if(type.type == tokenType::_float){
                 valsIdx = genSingle(valsIdx, "xmm0", stmtIdx);
             }else{
-                valsIdx = genSingle(valsIdx, "rdi", stmtIdx);
+                valsIdx = genSingle(valsIdx, "rax", stmtIdx);
             }
             isPrevOp = false;
             break;
@@ -159,8 +153,8 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
             if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
                 push("rax", 8);
                 idx = genExpr(stmtIdx, idx + 2);
-                pop("rax", 8);
-                outAsm << "mul rdi\n\t";
+                pop("rbx", 8);
+                outAsm << "mul rbx\n\t";
                 return idx;
             }else{
                 push("rax", 8);
@@ -174,14 +168,15 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
             if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
                 push("rax", 8);
                 idx = genExpr(stmtIdx, idx + 2);
+                outAsm << "mov rbx, rax\n\t";
                 pop("rax", 8);
-                outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
+                outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 return idx;
             }else{
                 push("rax", 8);
                 idx = genSingle(idx + 1, "rbx", stmtIdx);
                 pop("rax", 8);
-                outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
+                outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 return idx;
             } 
         }
@@ -189,15 +184,16 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
             if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
                 push("rax", 8);
                 idx = genExpr(stmtIdx, idx + 2);
+                outAsm << "mov rbx, rax\n\t";
                 pop("rax", 8);
-                outAsm << "mov rdx, 0\n\tdiv rdi\n\t";
+                outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 outAsm << "mov rax, rdx\n\t";
                 return idx;
             }else{
                 push("rax", 8);
                 idx = genSingle(idx + 1, "rbx", stmtIdx);
                 pop("rax", 8);
-                outAsm << "mov rdx, 0\n\tdiv rbx\n\t";
+                outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 outAsm << "mov rax, rdx\n\t";
                 return idx;
             }

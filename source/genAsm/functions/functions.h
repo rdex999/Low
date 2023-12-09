@@ -34,7 +34,6 @@ inline int genAsm::genFunctionCall(int idx)
     if(argsIdxs.size()){
         int regularRegistersCount = 0;
         int xmmRegistersCount = 0;
-        bool rdiWasUsed = false;
         for(int i = argsIdxs.size() - 1; i>=0; --i){
             retIdx = genExpr(index, argsIdxs.at(i));
             eType exprType = getType(index, argsIdxs.at(i));
@@ -46,32 +45,31 @@ inline int genAsm::genFunctionCall(int idx)
                 switch (regularRegistersCount)
                 {
                 case 0:
-                    push("rdi", 8);
-                    rdiWasUsed = true;
+                    outAsm << "mov rdi, rax\n\t";
                     break;
 
                 case 1:
-                    outAsm << "mov rsi, rdi\n\t";
+                    outAsm << "mov rsi, rax\n\t";
                     break;
 
                 case 2:
-                    outAsm << "mov rdx, rdi\n\t";
+                    outAsm << "mov rdx, rax\n\t";
                     break;
 
                 case 3:
-                    outAsm << "mov rcx, rdi\n\t";
+                    outAsm << "mov rcx, rax\n\t";
                     break;
 
                 case 4:
-                    outAsm << "mov r8, rdi\n\t";
+                    outAsm << "mov r8, rax\n\t";
                     break;
 
                 case 5:
-                    outAsm << "mov r9, rdi\n\t";
+                    outAsm << "mov r9, rax\n\t";
                     break;
 
                 default:
-                    push("edi", 4);
+                    push("rax", 8);
                     break;
                 }
                 ++regularRegistersCount;
@@ -85,9 +83,6 @@ inline int genAsm::genFunctionCall(int idx)
                 }
                 ++xmmRegistersCount;
             }
-        }
-        if(rdiWasUsed){
-            pop("rdi", 8);
         }
     }
 

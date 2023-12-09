@@ -15,6 +15,9 @@ namespace node
     struct program
     {
         // a vector of statements
-        std::vector<st> sts; 
+        std::vector<st> sts;
+
+        // the stack usage in main
+        uint mainStackSize = 16;
     };
 };

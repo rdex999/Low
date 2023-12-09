@@ -19,8 +19,8 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
 
     secData << "bits 64\n\nsection .data\n\tf32One: dd 1.0";
     secText << "\n\nsection .text\n\tglobal _start";
-    outAsm << "\n\n_start:\n\tpush rbp\n\tmov rbp, rsp\n\tsub rsp, 16\n\n\t";
-    
+    mainInit();
+
     if(lowStdLib){
         addStdLibFunc("printStr");
         addStdLibFunc("printChar");
@@ -32,9 +32,10 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     for(index = 0; index < prog->sts.size(); ++index)
     {
         genStmt();
+        outAsm << "\n\t";
     }
 
-    outAsm << "mov rax, 60\n\txor rdi, rdi\n\tsyscall";
+    mainExit();
 
     finalAsm << secData.str() << secText.str() << outAsm.str();
 }
@@ -45,6 +46,23 @@ inline void genAsm::addStdLibFunc(const char* funcName)
         .isFunction = true, .isExtern = true}});
 
     secText << "\n\textern " << funcName;
+}
+
+inline void genAsm::mainInit()
+{
+    outAsm << "\n\n_start:\n\t";
+    outAsm << "push rbp\n\t";
+    outAsm << "mov rbp, rsp\n\t";
+    outAsm << "sub rsp, " << prog->mainStackSize << "\n\n\t";
+}
+
+inline void genAsm::mainExit()
+{
+    outAsm << "mov rsp, rbp\n\t";
+    outAsm << "pop rbp\n\t";
+    outAsm << "mov rax, 60\n\t";
+    outAsm << "xor rdi, rdi\n\t";
+    outAsm << "syscall\n\t";
 }
 
 void genAsm::genStmt()
@@ -154,7 +172,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         secData << "\n\t" << textName <<
             " db " << handleSpecialChar(&prog->sts.at(stmtIdx).vals.at(retIdx).value) << ", 0";
 
-        outAsm << "mov rdi, " << textName << "\n\t";
+        outAsm << "mov " << reg << ", " << textName << "\n\t";
         break;
     }
 
@@ -170,7 +188,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             }
         }else{
             if(type.type == tokenType::_float){
-                outAsm << "mov rdi, [rbp - " << v->stackLoc << "]\n\t";
+                outAsm << "mov rax, [rbp - " << v->stackLoc << "]\n\t";
             }else{
                 outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
                         " [rbp - " << (int)(v->stackLoc) << "]\n\t";
@@ -202,12 +220,12 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                 retIdx = genPostIncDec(retIdx, reg);
 
             }else{
-                retIdx = genSingle(retIdx+1, "rdi", stmtIdx);
+                retIdx = genSingle(retIdx+1, "rax", stmtIdx);
 
                 if(type.type == tokenType::_float){
-                    outAsm << "movss " << reg << ", [rdi]\n\t";
+                    outAsm << "movss " << reg << ", [rax]\n\t";
                 }else{
-                    outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rdi]\n\t";
+                    outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rax]\n\t";
                 }
             }
 
@@ -221,8 +239,8 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
     case tokenType::parenOpen:
         retIdx = genExpr(stmtIdx, retIdx + 1);
-        if((std::string)reg != "rdi"){
-            outAsm << "mov " << reg << ", rdi\n\t";
+        if((std::string)reg != "rax"){
+            outAsm << "mov " << reg << ", rax\n\t";
         }
         break;
 
@@ -271,28 +289,28 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         }
 
         if(type.type == tokenType::_float){
-            push("rdi", 8);
+            push("rax", 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
-            outAsm << "mov rax, rdi\n\t";
             outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
-            pop("rdi", 8);
-            outAsm << "add rdi, rax\n\t";
+            pop("rbx", 8);
+            outAsm << "sub rbx, rax\n\t";
             if(ifPtrGetPValue){
-                outAsm << "movss " << reg << ", [rdi]\n\t";
-            }else if((std::string)"rdi" != reg){
-                outAsm << "mov " << reg << ", rdi\n\t";
+                outAsm << "movss " << reg << ", [rbx]\n\t";
+            }else if((std::string)"rbx" != reg){
+                outAsm << "mov " << reg << ", rbx\n\t";
             }
         }else{
             push(reg, 8);
             retIdx = genExpr(stmtIdx, retIdx+2);
-            outAsm << "mov rax, rdi\n\t";
             outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
-            pop(reg, 8);
-            outAsm << "add " << reg << ", rax\n\t";
+            pop("rbx", 8);
+            outAsm << "sub rbx, rax\n\t";
             if(ifPtrGetPValue){
-                outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [" << reg << "]\n\t";
+                outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [rbx]\n\t";
+            }else if((std::string)"rbx" != reg){
+                outAsm << "mov " << reg << ", rbx\n\t";
             }
         }
     }
@@ -315,6 +333,7 @@ inline void genAsm::genExit()
         outAsm << "mov rax, 60\n\tmov rdi, " << prog->sts.at(index).vals.at(1).value << "\n\tsyscall\n\t";
     }else{
         genExpr(index, 1);
+        outAsm << "mov rdi, rax\n\t";
         outAsm << "mov rax, 60\n\t";
         outAsm << "syscall\n\t";
     }

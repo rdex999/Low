@@ -50,7 +50,7 @@ inline void genAsm::genChar(int idx)
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
                         i = genExpr(index, i+2);
-                        push(selectReg("rdi", v.size).c_str(), v.size); // dil: low 8 bits of rdi
+                        push(selectReg("rax", v.size).c_str(), v.size); // dil: low 8 bits of rdi
                         i += 2;
                     }else{
                         std::cerr << "Error, cannot use assignment operator(=) without a value." << std::endl;
@@ -58,7 +58,7 @@ inline void genAsm::genChar(int idx)
                     }
                 }else{ // char ch;
                     if(isArr){
-                        outAsm << "lea rax, [rbp - " << stackLoc + 8 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + 1 << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

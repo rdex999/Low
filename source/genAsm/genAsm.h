@@ -43,10 +43,13 @@ class genAsm
         const node::program* prog;
 
         size_t index = 0;
-        size_t stackLoc = 0;
+        size_t stackLoc = 16;
         size_t lableNum = 0;
 
         inline void addStdLibFunc(const char* funcName); 
+
+        inline void mainInit();
+        inline void mainExit();
 
         // @returns {size_t} lables until closing curly
         size_t findLableCountCurly(size_t stmtIdx);

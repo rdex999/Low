@@ -14,6 +14,7 @@ enum class tokenType
     lable,
     _int, // int data type
     _float, // float data type
+    _char, // char data type
     equal, // =
     addEq, // +=
     subEq, // -=
@@ -51,7 +52,6 @@ enum class tokenType
     lEq, // less or equal to <=
     quote, // ' '
     dQoute, // " "
-    _char, // char data type
     ptr, // ptr keyword, for pointers. (char ptr myString = "string";)
     singleAnd, // &
 };

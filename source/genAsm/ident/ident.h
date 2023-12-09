@@ -79,10 +79,10 @@ inline void genAsm::genUpdateIdent()
             }
         }else{
             if(ptr){
-                outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+                outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
                 outAsm << "mov " << selectWord(v->size) << " [rbp - " << (int)(v->stackLoc) << "], " <<
-                    selectReg("rdi", v->size) << "\n\t";
+                    selectReg("rax", v->size) << "\n\t";
             }
         }
         break;
@@ -130,11 +130,11 @@ inline void genAsm::genUpdateIdent()
         }else{
             if(ptr){
                 outAsm << "add " << selectWord(v->ptrReadBytes) <<
-                    " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+                    " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
                 outAsm << "add " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "], " <<
-                    selectReg("rdi", v->size) << "\n\t";
+                    selectReg("rax", v->size) << "\n\t";
             }
         }
         break;
@@ -153,11 +153,11 @@ inline void genAsm::genUpdateIdent()
         }else{
             if(ptr){
                 outAsm << "sub " << selectWord(v->ptrReadBytes) <<
-                    " [rbx], " << selectReg("rdi", v->ptrReadBytes) << "\n\t";
+                    " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
                 outAsm << "sub " << selectWord(v->size) << " [rbp - " <<
                     (int)(v->stackLoc) << "], " <<
-                    selectReg("rdi", v->size) << "\n\t";
+                    selectReg("rax", v->size) << "\n\t";
             }
         }
         break;
@@ -174,7 +174,6 @@ inline void genAsm::genUpdateIdent()
                 outAsm << "movss [rbp - " << v->stackLoc << "], xmm1\n\t";
             }
         }else{
-            outAsm << "mov rax, rdi\n\t";
             if(ptr){
                 outAsm << "mul " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
 
@@ -204,16 +203,17 @@ inline void genAsm::genUpdateIdent()
             }
         }else{
             outAsm << "xor rdx, rdx\n\t";
+            outAsm << "mov rcx, rax\n\t";
             if(ptr){
                 outAsm << "mov " << selectReg("rax", v->ptrReadBytes) << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
-                outAsm << "div rdi\n\t";
+                outAsm << "div rcx\n\t";
                 outAsm << "mov " << selectWord(v->ptrReadBytes) << " [rbx], " << selectReg("rax", v->ptrReadBytes) << "\n\t";
             }else{
                 outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
                     " [rbp - " << (int)(v->stackLoc) << "]\n\t";
-                outAsm << "div rdi\n\t";
-                outAsm << "mov " << selectWord(v->size) <<
-                    " [rbp - " << (int)(v->stackLoc) << "], " <<
+
+                outAsm << "div rcx\n\t";
+                outAsm << "mov " << selectWord(v->size) << " [rbp - " << (int)(v->stackLoc) << "], " <<
                     selectReg("rax", v->size) << "\n\t";
             }
         } 
@@ -226,12 +226,12 @@ inline void genAsm::genUpdateIdent()
         }
 
         outAsm << "xor rdx, rdx\n\t";
-
+        outAsm << "mov rcx, rax\n\t";
         if(ptr){
             outAsm << "mov " << selectReg("rax", v->ptrReadBytes)
                 << ", " << selectWord(v->ptrReadBytes) << " [rbx]\n\t";
 
-            outAsm << "div rdi\n\t";
+            outAsm << "div rcx\n\t";
             
             outAsm << "mov " << selectWord(v->ptrReadBytes)
                 << " [rbx], " << selectReg("rdx", v->ptrReadBytes) << "\n\t";
@@ -240,7 +240,7 @@ inline void genAsm::genUpdateIdent()
             outAsm << "mov " << selectReg("rax", v->size) << ", " << selectWord(v->size) <<
                 " [rbp - " << (int)(v->stackLoc) << "]\n\t";
 
-            outAsm << "div rdi\n\t";
+            outAsm << "div rcx\n\t";
 
             outAsm << "mov " << selectWord(v->size) <<
                 " [rbp - " << (int)(v->stackLoc) << "], " <<

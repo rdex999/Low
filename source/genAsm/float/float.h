@@ -54,7 +54,7 @@ inline void genAsm::genFloat(int idx)
                         if(v.ptrReadBytes == -1){
                             push("xmm0", v.size, "", "movss");
                         }else{
-                            push("rdi", 8);
+                            push("rax", 8);
                         }
                         i += 2;
                     }else{
@@ -63,7 +63,7 @@ inline void genAsm::genFloat(int idx)
                     }
                 }else{ // int x;
                     if(isArr){ // int[10] x;
-                        outAsm << "lea rax, [rbp - " << stackLoc + 8 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + 4 << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

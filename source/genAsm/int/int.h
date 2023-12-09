@@ -51,7 +51,7 @@ inline void genAsm::genInt(int idx)
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
                         i = genExpr(index, i+2);
-                        push(selectReg("rdi", v.size).c_str(), v.size);
+                        push(selectReg("rax", v.size).c_str(), v.size);
                         i += 2;
                     }else{
                         std::cerr << "Error, cannot use assignment operator(=) without a value." << std::endl;
@@ -59,7 +59,7 @@ inline void genAsm::genInt(int idx)
                     }
                 }else{ // int x;
                     if(isArr){ // int[10] x;
-                        outAsm << "lea rax, [rbp + " << stackLoc + 8 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + 4 << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

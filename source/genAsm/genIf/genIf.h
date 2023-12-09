@@ -109,7 +109,7 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
                 prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::parenClose)
             {
                 if(cmpType == tokenType::_int){
-                    outAsm << "test rdi, rdi\n\t";
+                    outAsm << "test rax, rax\n\t";
                 }else if(cmpType == tokenType::_float){
                     outAsm << "ptest xmm0, xmm0\n\t";
                 }
@@ -130,10 +130,10 @@ int genAsm::cmpTwo(size_t stmtIdx, int idx, tokenType cmpType)
     switch (cmpType)
     {
     case tokenType::_int:
-        push("rdi", 8);
+        push("rax", 8);
         idx = genExpr(stmtIdx, idx+1) - 1;
         pop("rbx", 8);
-        outAsm << "cmp rbx, rdi\n\t";
+        outAsm << "cmp rbx, rax\n\t";
         break;
 
     case tokenType::_float:
