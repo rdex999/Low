@@ -79,7 +79,6 @@ if 5 is 5{
 ```
 
 ## Loops
-Currently only while loops are supported, there will be more in the future.
 ### while
 Syntax: `while <condition> { code; }` \
 Example:
