@@ -1,17 +1,3 @@
-int[20] xs;
-xs[0] = 1234567890;
-xs[1] = -5432167;
-printInt(xs[0]);
+float x = 432.612;
+printFloat32(x, 10);
 printChar('\n');
-printInt(xs[1]);
-printChar('\n');
-printChar('\n');
-for int i = 0; i<2; i++{
-    printInt(xs[i]);
-    printChar(10);
-}
-printStr("Hello world!\n");
-int y = 4002;
-int ptr p = &y;
-printInt(*p);
-printChar(10);
