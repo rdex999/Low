@@ -91,9 +91,6 @@ inline int genAsm::genFunctionCall(int idx)
         }
     }
 
-    //if(v->stackLocReg){
-    //    outAsm << "lea " << v->stackLocReg << ", [rbp - " << stackLoc << "]\n\t";
-    //}
     outAsm << "call " << prog->sts.at(index).vals.at(idx).value << "\n\t";
     return retIdx;
 }

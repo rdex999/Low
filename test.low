@@ -1,3 +1,7 @@
 float x = 432.612;
 printFloat32(x, 10);
 printChar('\n');
+printStr("Hello world!\n");
+int a = 13259;
+printInt(a);
+printChar(10);

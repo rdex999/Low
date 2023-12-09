@@ -34,7 +34,6 @@ class genAsm
             int ptrReadBytes = -1; // if -1 then not a pointer
             bool isFunction = false;
             bool isExtern = false;
-            const char* stackLocReg = nullptr; 
         };
 
         std::vector<int> scopeStackLoc;
@@ -47,7 +46,7 @@ class genAsm
         size_t stackLoc = 0;
         size_t lableNum = 0;
 
-        inline void addStdLibFunc(const char* funcName, const char* stackReg = nullptr); 
+        inline void addStdLibFunc(const char* funcName); 
 
         // @returns {size_t} lables until closing curly
         size_t findLableCountCurly(size_t stmtIdx);
