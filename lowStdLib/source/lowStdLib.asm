@@ -4,3 +4,4 @@
 %include "./printChar/printChar.asm"
 %include "./printInt/printInt.asm"
 %include "./printFloat32/printFloat32.asm"
+%include "./print/print.asm"

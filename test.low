@@ -1,15 +1,3 @@
-float[10] arr;
-float offset = 13.12321;
-for int i=0; i<10; ++i{
-    arr[i] = (offset + 4.2)*23.7;
-    offset++;
-}
-
-for int i=0; i<10; ++i{
-    printFloat32(arr[i] , 10);
-    printChar(10);
-}
-
-printChar(10);
-printFloat32(*(arr + 8), 10);
-printChar(10);
+char ptr msg = "A string";
+float x = -13.12345;
+print("Hello %i world! %chey: %s After string %f %i text\n", 8341, 10, msg, x, -7452);

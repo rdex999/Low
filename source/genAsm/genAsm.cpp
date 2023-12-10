@@ -26,6 +26,7 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
         addStdLibFunc("printChar");
         addStdLibFunc("printInt");
         addStdLibFunc("printFloat32");
+        addStdLibFunc("print");
     }
 
 
@@ -348,30 +349,41 @@ inline std::string genAsm::handleSpecialChar(const std::string* str)
             {
             case 'n':
                 out.replace(i, 2, "\", 10, \"");
+                ++i;
                 break;
             
             case 'r':
                 out.replace(i, 2, "\", 13, \""); 
+                ++i;
                 break;
             
             case 't':
                 out.replace(i, 2, "\", 9, \""); 
+                ++i;
                 break;
 
             case '"': 
                 out.replace(i, 2, "\", 34, \""); 
+                ++i;
                 break;
 
             case 'b':
                 out.replace(i, 2, "\", 8, \""); 
+                ++i;
                 break;
 
             case 'f':
                 out.replace(i, 2, "\", 12, \""); 
+                ++i;
                 break;
 
             case '0':
                 out.replace(i, 2, "\", 0, \""); 
+                ++i;
+                break;
+
+            case '%':
+                ++i;
                 break;
 
             default:
