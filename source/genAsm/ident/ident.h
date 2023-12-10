@@ -36,25 +36,9 @@ inline void genAsm::genUpdateIdent()
                 {
                     ptr = true;
                     i = genSingle(i, "rbx", index, false, false);
+                    push("rbx", 8);
                 }
             }
-        }
-        if(prog->sts.at(index).vals.at(i).type == tokenType::mul){
-            for(int j=i; j<prog->sts.at(index).vals.size(); ++j){
-                if(prog->sts.at(index).vals.at(j).type >= tokenType::equal &&
-                    prog->sts.at(index).vals.at(j).type <= tokenType::mm)
-                {
-                    std::cerr << "Error, unknown oparation size. Try casting to a type." << std::endl;
-                    exit(1);
-                    break;
-                }
-                if(prog->sts.at(index).vals.at(j).type == tokenType::ident){
-                    v = (var*)varAccessible(&prog->sts.at(index).vals.at(j).value, scopeStackLoc.size());
-                    break;
-                }
-            }
-            ptr = true;
-            i = genSingle(i+1, "rbx", index, false, false);
         }
     }
     if(operatorIdx == -1){
@@ -64,6 +48,9 @@ inline void genAsm::genUpdateIdent()
     if(!v){
         std::cerr << "Error, cannot change an rvalue." << std::endl;
         exit(1);
+    }
+    if(ptr){
+        pop("rbx", 8);
     }
 
             // the operator, = += -= *= /= 

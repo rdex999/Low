@@ -58,7 +58,7 @@ inline void genAsm::genChar(int idx)
                     }
                 }else{ // char ch;
                     if(isArr){
-                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + 1 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + arrSize << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

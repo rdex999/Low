@@ -1,26 +1,15 @@
-float[30] arr;
-float offset = 12.3241;
-for int i=0; i<30; ++i{
-    arr[i] = offset;
-    offset += 0.6341;
+float[10] arr;
+float offset = 13.12321;
+for int i=0; i<10; ++i{
+    arr[i] = (offset + 4.2)*23.7;
+    offset++;
 }
 
-for int i=0; i<30; ++i{
+for int i=0; i<10; ++i{
     printFloat32(arr[i] , 10);
     printChar(10);
 }
 
-int[30] iarr;
-int ioffset = 12;
-for int i=0; i<30; ++i{
-    iarr[i] = ioffset;
-    ioffset += 23;
-}
-
-for int i=0; i<30; ++i{
-    printInt(iarr[i]);
-    printChar(10);
-}
-
-char ptr st = "Hello world!\n";
-printStr(st);
+printChar(10);
+printFloat32(*(arr + 8), 10);
+printChar(10);

@@ -63,7 +63,7 @@ inline void genAsm::genFloat(int idx)
                     }
                 }else{ // int x;
                     if(isArr){ // int[10] x;
-                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + 4 << "]\n\t";
+                        outAsm << "lea rax, [rbp - " << stackLoc + 8 + arrSize << "]\n\t";
                         push("rax", 8);
                         stackLoc += arrSize;
                     }else{

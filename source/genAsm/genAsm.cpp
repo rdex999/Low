@@ -32,7 +32,6 @@ genAsm::genAsm(const node::program* prog, bool lowStdLib)
     for(index = 0; index < prog->sts.size(); ++index)
     {
         genStmt();
-        outAsm << "\n\t";
     }
 
     mainExit();
@@ -125,6 +124,7 @@ void genAsm::genStmt()
     default:
         break;
     }
+    outAsm << "\n\t";
 }
 
 int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec, bool ifPtrGetPValue)
@@ -294,7 +294,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
             pop("rbx", 8);
-            outAsm << "sub rbx, rax\n\t";
+            outAsm << "add rbx, rax\n\t";
             if(ifPtrGetPValue){
                 outAsm << "movss " << reg << ", [rbx]\n\t";
             }else if((std::string)"rbx" != reg){
@@ -306,7 +306,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
             outAsm << "mul rcx\n\t";
             pop("rbx", 8);
-            outAsm << "sub rbx, rax\n\t";
+            outAsm << "add rbx, rax\n\t";
             if(ifPtrGetPValue){
                 outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [rbx]\n\t";
             }else if((std::string)"rbx" != reg){
