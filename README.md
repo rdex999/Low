@@ -51,8 +51,16 @@ myArr[1] = 683242;
 ## Printing
 There are function from the low standard library to print to the console, explained below.
 ### stdout
-You can print a string to stdout using the printStr function. \
-Usage: \
+For printing values with text, use the print funnction. Example: \
+`print("value is %i \n");` 
+#### Formating options
+%i -> signed 32 bit int \
+%c -> character (char) \
+%s -> string (zero terminated) \
+%f -> signed 32 bit float
+
+For printing values, you can use the following functions. \
+For printing a zero terminated string: \
 `printStr("Hello, world!\n");` \
 You can also print a single character with the printChar function, example: \
 `printChar('a');` \
