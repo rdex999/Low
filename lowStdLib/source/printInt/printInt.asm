@@ -9,50 +9,44 @@ section .text
 printInt:
     push rbp
     mov rbp, rsp
-    sub rsp, 14 ; alloc 14 bytes
+    sub rsp, 14     ; alloc 14 bytes
 
-    mov [rbp - 4], edi
-    shr edi, 31
-    jz printIntPosInit ; jump if edi is positive
+    lea rsi, [rbp - 1]
+    mov eax, [rbp + 16]     ; first argument
+    mov ebx, eax
+    xor rcx, rcx
+    shr ebx, 31
+    jz printInt_loop
 
-    lea rsi, [rbp - 5]
-    mov BYTE [rsi], '-'
+    mov ebx, eax
     mov rax, 1
     mov rdi, 1
+    mov BYTE [rsi], '-'
     mov rdx, 1
     syscall
 
-    mov eax, [rbp - 4]
+    mov eax, ebx
     mov ebx, -1
     mul ebx
-    xor rcx, rcx 
-    lea rsi, [rbp - 5]
-    jmp printIntLoop
-
-
-printIntPosInit:
     xor rcx, rcx
-    lea rsi, [rbp - 5]
-    mov eax, [rbp - 4]
 
-printIntLoop:
+printInt_loop:
     mov ebx, 10
     xor rdx, rdx
     div ebx
     add dl, 48
     mov [rsi], dl
-    inc rcx
     dec rsi
+    inc rcx
     test eax, eax
-    jnz printIntLoop
+    jnz printInt_loop
 
     mov rax, 1
     mov rdi, 1
-    mov rdx, rcx
     inc rsi
+    mov rdx, rcx
     syscall
 
-    ;mov rsp, rbp
-    ;pop rbp
-    leave 
+    mov rsp, rbp
+    pop rbp
     ret

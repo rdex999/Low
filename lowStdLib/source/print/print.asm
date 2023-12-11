@@ -98,11 +98,13 @@ print_int32:
     add r8, 8
     mov [rbp - 16], r8
 
-    mov ecx, eax
-    shr ecx, 31
-    mov ebx, eax 
-    jz print_int32posInit
+    mov ebx, eax
+    xor rcx, rcx
     lea rsi, [rbp - 17]
+    shr ebx, 31
+    jz print_int32loop
+
+    mov ebx, eax
     mov rax, 1
     mov rdi, 1
     mov BYTE [rsi], '-'
@@ -113,13 +115,7 @@ print_int32:
     mov ebx, -1
     mul ebx
     xor rcx, rcx
-    lea rsi, [rbp - 17]
-    jmp print_int32loop
 
-
-print_int32posInit:
-    xor rcx, rcx
-    lea rsi, [rbp - 17]
 print_int32loop:
     mov rbx, 10
     xor rdx, rdx

@@ -8,9 +8,7 @@ printChar:
     push rbp
     mov rbp, rsp
 
-    dec rsp
-    mov [rbp - 1], dil
-    mov rsi, rsp
+    lea rsi, [rbp + 16]
     mov rax, 1
     mov rdi, 1
     mov rdx, 1

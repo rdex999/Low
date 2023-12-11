@@ -17,8 +17,8 @@ printFloat32:
     sub rsp, 20 
 
     lea rsi, [rbp - 1]
-    mov ecx, edi ; store second argument in ecx
-    cvtss2si eax, xmm0 ; convert xmm0 to int in eax
+    mov ecx, [rbp + 24]     ; store second argument in ecx
+    cvtss2si eax, xmm0  ; convert xmm0 to int in eax
     shr eax, 31
     jz printFloat32_posInit ; jump if eax is positivea
 

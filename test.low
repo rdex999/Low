@@ -1,3 +1,9 @@
 char ptr msg = "A string";
 float x = -13.12345;
 print("Hello %i world! %chey: %s After string %f %i text\n", 8341, 10, msg, x, -7452);
+printChar(10);
+printInt(39578);
+printChar(10);
+printStr("Hello world!\n");
+printFloat32(13.123454, 10);
+printChar(10);
