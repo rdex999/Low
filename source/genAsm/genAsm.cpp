@@ -191,7 +191,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             if(type.type == tokenType::_float){
                 outAsm << "mov rax, [rbp - " << v->stackLoc << "]\n\t";
             }else{
-                outAsm << "mov " << selectReg(reg, 8) << ", " << selectWord(8) <<
+                outAsm << "mov rax, " << selectWord(8) <<
                         " [rbp - " << (int)(v->stackLoc) << "]\n\t";
             } 
         }
@@ -289,31 +289,53 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             exit(1);
         }
 
-        if(type.type == tokenType::_float){
-            push("rax", 8);
-            retIdx = genExpr(stmtIdx, retIdx+2);
-            outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
-            outAsm << "mul rcx\n\t";
-            pop("rbx", 8);
-            outAsm << "add rbx, rax\n\t";
-            if(ifPtrGetPValue){
-                outAsm << "movss " << reg << ", [rbx]\n\t";
-            }else if((std::string)"rbx" != reg){
-                outAsm << "mov " << reg << ", rbx\n\t";
+        if(retIdx + 3 < prog->sts.at(index).vals.size()){
+            if(prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::intLit &&
+                prog->sts.at(stmtIdx).vals.at(retIdx+3).type == tokenType::bracketClose)
+            {
+                if(ifPtrGetPValue){
+                    if(type.type == tokenType::_float){
+                        outAsm << "movss xmm0, [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                    }else{
+                        outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                    }
+                }else{
+                    outAsm << "lea " << reg << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                }
+                retIdx += 3; 
+            }else{
+                if(type.type == tokenType::_float){
+                    push("rax", 8);
+                    retIdx = genExpr(stmtIdx, retIdx+2);
+                    outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
+                    outAsm << "mul rcx\n\t";
+                    pop("rbx", 8);
+                    outAsm << "add rbx, rax\n\t";
+                    if(ifPtrGetPValue){
+                        outAsm << "movss " << reg << ", [rbx]\n\t";
+                    }else if((std::string)"rbx" != reg){
+                        outAsm << "mov " << reg << ", rbx\n\t";
+                    }
+                }else{
+                    push("rax", 8);
+                    retIdx = genExpr(stmtIdx, retIdx+2);
+                    outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
+                    outAsm << "mul rcx\n\t";
+                    pop("rbx", 8);
+                    outAsm << "add rbx, rax\n\t";
+                    if(ifPtrGetPValue){
+                        outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [rbx]\n\t";
+                    }else if((std::string)"rbx" != reg){
+                        outAsm << "mov " << reg << ", rbx\n\t";
+                    }
+                }
+
             }
         }else{
-            push(reg, 8);
-            retIdx = genExpr(stmtIdx, retIdx+2);
-            outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
-            outAsm << "mul rcx\n\t";
-            pop("rbx", 8);
-            outAsm << "add rbx, rax\n\t";
-            if(ifPtrGetPValue){
-                outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", " << selectWord(type.ptrReadBytes) << " [rbx]\n\t";
-            }else if((std::string)"rbx" != reg){
-                outAsm << "mov " << reg << ", rbx\n\t";
-            }
+            std::cerr << "Error, expected closing bracket. ( ] )" << std::endl;
+            exit(1);
         }
+
     }
     return retIdx;
 }

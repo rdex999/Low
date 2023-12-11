@@ -42,54 +42,12 @@ inline int genAsm::genFunctionCall(int idx)
                 std::cerr << "Error, unknown expresion type. Try casting to something." << std::endl;
                 exit(1);
             }
-            if(exprType.type == tokenType::_float && exprType.ptrReadBytes == -1){
+            if(exprType.type == tokenType::_float){
                 outAsm << "sub rsp, 8\n\t";
                 outAsm << "movsd [rsp], xmm0\n\t";
             }else{
                 outAsm << "push rax\n\t";
             }
-            //if(exprType.type == tokenType::_int || exprType.type == tokenType::_char){
-            //    switch (regularRegistersCount)
-            //    {
-            //    case 0:
-            //        outAsm << "mov rdi, rax\n\t";
-            //        break;
-//
-            //    case 1:
-            //        outAsm << "mov rsi, rax\n\t";
-            //        break;
-//
-            //    case 2:
-            //        outAsm << "mov rdx, rax\n\t";
-            //        break;
-//
-            //    case 3:
-            //        outAsm << "mov rcx, rax\n\t";
-            //        break;
-//
-            //    case 4:
-            //        outAsm << "mov r8, rax\n\t";
-            //        break;
-//
-            //    case 5:
-            //        outAsm << "mov r9, rax\n\t";
-            //        break;
-//
-            //    default:
-            //        push("rax", 8);
-            //        break;
-            //    }
-            //    ++regularRegistersCount;
-            //}else if(exprType.type == tokenType::_float){
-            //    if(xmmRegistersCount > 0) {
-            //        if(xmmRegistersCount < 6){
-            //            outAsm << "movss xmm" << xmmRegistersCount << ", xmm0\n\t";
-            //        }else{
-            //            push("xmm0", 4, "", "movss");
-            //        }
-            //    }
-            //    ++xmmRegistersCount;
-            //}
         }
     }
 
