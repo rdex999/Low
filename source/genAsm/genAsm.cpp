@@ -128,50 +128,50 @@ void genAsm::genStmt()
     outAsm << "\n\t";
 }
 
-int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec, bool ifPtrGetPValue)
+exprRes genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec, bool ifPtrGetPValue)
 {
-    int retIdx = idx;
+    exprRes res = exprRes{.retIdx = idx};
     eType type = getType(stmtIdx, idx);
     if(type.type == (tokenType)0){
         std::cerr << "Error, no expresion type." << std::endl;
         exit(1);
     }
 
-    if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.size() > retIdx + 1 &&
-        (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::pp ||
-        prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mm))
+    if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.size() > res.retIdx + 1 &&
+        (prog->sts.at(stmtIdx).vals.at(res.retIdx + 1).type == tokenType::pp ||
+        prog->sts.at(stmtIdx).vals.at(res.retIdx + 1).type == tokenType::mm))
     {
-        retIdx = genPostIncDec(retIdx, reg);
+        res.retIdx = genPostIncDec(res.retIdx, reg);
         goto checkMulDiv;
 
-    }else if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::pp ||
-        prog->sts.at(stmtIdx).vals.at(retIdx).type == tokenType::mm)
+    }else if(checkPostPreIncDec && prog->sts.at(stmtIdx).vals.at(res.retIdx).type == tokenType::pp ||
+        prog->sts.at(stmtIdx).vals.at(res.retIdx).type == tokenType::mm)
     {
-        retIdx = genPreIncDec(retIdx, reg);
+        res.retIdx = genPreIncDec(res.retIdx, reg);
         goto checkMulDiv;
     }
 
-    switch (prog->sts.at(stmtIdx).vals.at(retIdx).type)
+    switch (prog->sts.at(stmtIdx).vals.at(res.retIdx).type)
     {
     case tokenType::intLit:
-        outAsm << "mov " << reg << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
+        outAsm << "mov " << reg << ", " << prog->sts.at(stmtIdx).vals.at(res.retIdx).value << "\n\t";
         break;
 
     case tokenType::floatLit:{
         std::string floatDataName = createFloat32VarName();
-        secData << "\n\t" << floatDataName << ": dd " << prog->sts.at(stmtIdx).vals.at(retIdx).value;
+        secData << "\n\t" << floatDataName << ": dd " << prog->sts.at(stmtIdx).vals.at(res.retIdx).value;
         outAsm << "movss xmm0, DWORD [" << floatDataName << "]\n\t";
         break;
     }
 
     case tokenType::quote:
-        outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(stmtIdx).vals.at(retIdx).value << "\n\t";
+        outAsm << "mov " << selectReg(reg, 1) << ", " << prog->sts.at(stmtIdx).vals.at(res.retIdx).value << "\n\t";
         break;
 
     case tokenType::dQoute:{
         std::string textName = createTextVarName();
         secData << "\n\t" << textName <<
-            " db " << handleSpecialChar(&prog->sts.at(stmtIdx).vals.at(retIdx).value) << ", 0";
+            " db " << handleSpecialChar(&prog->sts.at(stmtIdx).vals.at(res.retIdx).value) << ", 0";
 
         outAsm << "mov " << reg << ", " << textName << "\n\t";
         break;
@@ -179,7 +179,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
     case tokenType::ident:{
 
-        var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(retIdx).value), scopeStackLoc.size());
+        var* v = (var*)varAccessible(&(prog->sts.at(stmtIdx).vals.at(res.retIdx).value), scopeStackLoc.size());
         if(v->ptrReadBytes == -1){
             if(type.type == tokenType::_float){
                 outAsm << "movss xmm0, [rbp - " << (int)(v->stackLoc) << "]\n\t";
@@ -200,8 +200,8 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     }
 
     case tokenType::singleAnd:{
-        if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
-            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++retIdx).value, scopeStackLoc.size());
+        if(res.retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
+            var* v = (var*)varAccessible(&prog->sts.at(stmtIdx).vals.at(++res.retIdx).value, scopeStackLoc.size());
             outAsm << "lea " << reg << ", [rbp - " << v->stackLoc << "]\n\t";
 
         }else{
@@ -212,16 +212,16 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     }
 
     case tokenType::mul:{ // treating start as a pointer here
-        if(retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
+        if(res.retIdx+1 < prog->sts.at(stmtIdx).vals.size()){
 
-            if(retIdx+2 < prog->sts.at(stmtIdx).vals.size() &&
-                (prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::mm ||
-                prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::pp))
+            if(res.retIdx+2 < prog->sts.at(stmtIdx).vals.size() &&
+                (prog->sts.at(stmtIdx).vals.at(res.retIdx+2).type == tokenType::mm ||
+                prog->sts.at(stmtIdx).vals.at(res.retIdx+2).type == tokenType::pp))
             {
-                retIdx = genPostIncDec(retIdx, reg);
+                res.retIdx = genPostIncDec(res.retIdx, reg);
 
             }else{
-                retIdx = genSingle(retIdx+1, "rax", stmtIdx);
+                res.retIdx = genSingle(res.retIdx+1, "rax", stmtIdx).retIdx;
 
                 if(type.type == tokenType::_float){
                     outAsm << "movss xmm0, [rax]\n\t";
@@ -239,7 +239,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     }
 
     case tokenType::parenOpen:
-        retIdx = genExpr(stmtIdx, retIdx + 1).retIdx;
+        res.retIdx = genExpr(stmtIdx, res.retIdx + 1).retIdx;
         if((std::string)reg != "rax"){
             outAsm << "mov " << reg << ", rax\n\t";
         }
@@ -253,12 +253,12 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
 
     checkMulDiv:
 
-    if(prog->sts.at(stmtIdx).vals.size() > retIdx + 1 && 
-        (prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::mul ||
-        prog->sts.at(stmtIdx).vals.at(retIdx + 1).type == tokenType::div))
+    if(prog->sts.at(stmtIdx).vals.size() > res.retIdx + 1 && 
+        (prog->sts.at(stmtIdx).vals.at(res.retIdx + 1).type == tokenType::mul ||
+        prog->sts.at(stmtIdx).vals.at(res.retIdx + 1).type == tokenType::div))
     {
         if(type.type == tokenType::_float){
-            retIdx = genMulDiv(retIdx + 1, stmtIdx, tokenType::_float);
+            res.retIdx = genMulDiv(res.retIdx + 1, stmtIdx, tokenType::_float);
         
         }else{
             bool isRax = true;
@@ -266,39 +266,39 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                 outAsm << "mov rax, " << reg << "\n\t";
                 isRax = false; 
             }
-            retIdx = genMulDiv(retIdx + 1, stmtIdx, tokenType::_int);
+            res.retIdx = genMulDiv(res.retIdx + 1, stmtIdx, tokenType::_int);
             if(!isRax){
                 outAsm << "mov " << reg << ", rax\n\t";
             }
         }
     }
 
-    if(retIdx + 1 < prog->sts.at(stmtIdx).vals.size() &&
-        prog->sts.at(stmtIdx).vals.at(retIdx+1).type == tokenType::bracketOpen)
+    if(res.retIdx + 1 < prog->sts.at(stmtIdx).vals.size() &&
+        prog->sts.at(stmtIdx).vals.at(res.retIdx+1).type == tokenType::bracketOpen)
     {
         if(type.ptrReadBytes == -1){
             std::cerr << "Error, must specify data type to use index operator ( [] ).\nNote: You can do this \"*(var+offset)\"" << std::endl;
             exit(1);
         }
 
-        if(retIdx + 3 < prog->sts.at(stmtIdx).vals.size()){
-            if(prog->sts.at(stmtIdx).vals.at(retIdx+2).type == tokenType::intLit &&
-                prog->sts.at(stmtIdx).vals.at(retIdx+3).type == tokenType::bracketClose)
+        if(res.retIdx + 3 < prog->sts.at(stmtIdx).vals.size()){
+            if(prog->sts.at(stmtIdx).vals.at(res.retIdx+2).type == tokenType::intLit &&
+                prog->sts.at(stmtIdx).vals.at(res.retIdx+3).type == tokenType::bracketClose)
             {
                 if(ifPtrGetPValue){
                     if(type.type == tokenType::_float){
-                        outAsm << "movss xmm0, [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                        outAsm << "movss xmm0, [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(res.retIdx+2).value << "]\n\t";
                     }else{
-                        outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                        outAsm << "mov " << selectReg(reg, type.ptrReadBytes) << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(res.retIdx+2).value << "]\n\t";
                     }
                 }else{
-                    outAsm << "lea " << reg << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(retIdx+2).value << "]\n\t";
+                    outAsm << "lea " << reg << ", [rax + " << type.ptrReadBytes << " * " << prog->sts.at(stmtIdx).vals.at(res.retIdx+2).value << "]\n\t";
                 }
-                retIdx += 3; 
+                res.retIdx += 3; 
             }else{
                 if(type.type == tokenType::_float){
                     push("rax", 8);
-                    retIdx = genExpr(stmtIdx, retIdx+2).retIdx;
+                    res.retIdx = genExpr(stmtIdx, res.retIdx+2).retIdx;
                     outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
                     outAsm << "mul rcx\n\t";
                     pop("rbx", 8);
@@ -310,7 +310,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                     }
                 }else{
                     push("rax", 8);
-                    retIdx = genExpr(stmtIdx, retIdx+2).retIdx;
+                    res.retIdx = genExpr(stmtIdx, res.retIdx+2).retIdx;
                     outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
                     outAsm << "mul rcx\n\t";
                     pop("rbx", 8);
@@ -329,7 +329,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
         }
 
     }
-    return retIdx;
+    return res;
 }
 
 inline std::string genAsm::createTextVarName()

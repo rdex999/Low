@@ -106,7 +106,7 @@ class genAsm
         
         // @returns {int} the index 
         // @param {const char*} reg
-        int genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec = true, bool ifPtrGetPValue = true);
+        exprRes genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPreIncDec = true, bool ifPtrGetPValue = true);
 
         int genIfExpr(int from, int lable, size_t stmtIdx, bool invert = false, bool handleCurly = true);
 

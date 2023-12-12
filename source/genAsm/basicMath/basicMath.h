@@ -28,12 +28,12 @@ exprRes genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
             if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
-                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx).retIdx;
                 pop("xmm1", 4, "", "movss");
                 outAsm << "addss xmm0, xmm1\n\t";
             }else{
                 push("rax", 8);
-                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx).retIdx;
                 pop("rax", 8);
                 outAsm << "add rax, rbx\n\t";
             }
@@ -50,13 +50,13 @@ exprRes genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
             if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
-                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx).retIdx;
                 pop("xmm1", 4, "", "movss");
                 outAsm << "subss xmm1, xmm0\n\t";
                 outAsm << "movss xmm0, xmm1\n\t";
             }else{
                 push("rax", 8);
-                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx).retIdx;
                 pop("rax", 8);
                 outAsm << "sub rax, rbx\n\t";
             }
@@ -72,7 +72,7 @@ exprRes genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                res.retIdx = genSingle(res.retIdx, "rax", stmtIdx);
+                res.retIdx = genSingle(res.retIdx, "rax", stmtIdx).retIdx;
                 break;
             }
 
@@ -133,7 +133,7 @@ exprRes genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
 
         default:
-            res.retIdx = genSingle(res.retIdx, "rax", stmtIdx);
+            res.retIdx = genSingle(res.retIdx, "rax", stmtIdx).retIdx;
             isPrevOp = false;
             break;
         }
@@ -156,7 +156,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
                 return idx;
             }else{
                 push("rax", 8);
-                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                idx = genSingle(idx + 1, "rbx", stmtIdx).retIdx;
                 pop("rax", 8);
                 outAsm << "mul rbx\n\t";
                 return idx;
@@ -172,7 +172,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
                 return idx;
             }else{
                 push("rax", 8);
-                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                idx = genSingle(idx + 1, "rbx", stmtIdx).retIdx;
                 pop("rax", 8);
                 outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 return idx;
@@ -189,7 +189,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
                 return idx;
             }else{
                 push("rax", 8);
-                idx = genSingle(idx + 1, "rbx", stmtIdx);
+                idx = genSingle(idx + 1, "rbx", stmtIdx).retIdx;
                 pop("rax", 8);
                 outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
                 outAsm << "mov rax, rdx\n\t";
@@ -210,7 +210,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
                 return idx;
             }else{
                 push("xmm0", 4, "", "movss");
-                idx = genSingle(idx + 1, "xmm0", stmtIdx); // passing xmm0 has no effect
+                idx = genSingle(idx + 1, "xmm0", stmtIdx).retIdx; // passing xmm0 has no effect
                 pop("xmm1", 4, "", "movss");
                 outAsm << "mulss xmm0, xmm1\n\t";
                 return idx;
@@ -225,7 +225,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
                 return idx;
             }else{
                 push("xmm0", 4, "", "movss");
-                idx = genSingle(idx + 1, "xmm0", stmtIdx); // passing xmm0 has no effect
+                idx = genSingle(idx + 1, "xmm0", stmtIdx).retIdx; // passing xmm0 has no effect
                 pop("xmm1", 4, "", "movss");
                 outAsm << "divss xmm1, xmm0\n\t";
                 outAsm << "movss xmm0, xmm1\n\t";

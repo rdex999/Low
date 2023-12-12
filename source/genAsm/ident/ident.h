@@ -35,7 +35,7 @@ inline void genAsm::genUpdateIdent()
                     (i-1 >= 0 && prog->sts.at(index).vals.at(i-1).type == tokenType::mul)) // pointer
                 {
                     ptr = true;
-                    i = genSingle(i, "rbx", index, false, false);
+                    i = genSingle(i, "rbx", index, false, false).retIdx;
                     push("rbx", 8);
                 }
             }
@@ -254,7 +254,7 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
             }
         }
 
-        retIdx = genSingle(idx+2, "rbx", index);
+        retIdx = genSingle(idx+2, "rbx", index).retIdx;
 
         if(v->type == tokenType::_float){
             outAsm << "movss xmm0, [rbx]\n\t";
