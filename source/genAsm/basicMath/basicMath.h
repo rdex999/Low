@@ -1,38 +1,39 @@
 #pragma once
 
-int genAsm::genExpr(size_t stmtIdx, int valsIdx)
+exprRes genAsm::genExpr(size_t stmtIdx, int valsIdx)
 {
     bool isPrevOp = true;
+    exprRes res = exprRes{.retIdx = valsIdx}; 
     eType type = getType(stmtIdx, valsIdx);
     if(type.type == (tokenType)0){
         std::cerr << "Error, no expresion type." << std::endl;
         exit(1);
     }
 
-    for(; valsIdx<prog->sts.at(stmtIdx).vals.size(); ++valsIdx)
+    for(; res.retIdx<prog->sts.at(stmtIdx).vals.size(); ++res.retIdx)
     {
-        switch (prog->sts.at(stmtIdx).vals.at(valsIdx).type)
+        switch (prog->sts.at(stmtIdx).vals.at(res.retIdx).type)
         {
         case tokenType::parenOpen:
-            valsIdx = genExpr(stmtIdx, valsIdx+1);
+            res = genExpr(stmtIdx, res.retIdx+1);
             isPrevOp = false;
             break;
         
         case tokenType::add:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
+            if(res.retIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use plus(+) operator without a value." << std::endl;
                 exit(1);
             }
 
             if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
-                valsIdx = genSingle(valsIdx + 1, "xmm0", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx);
                 pop("xmm1", 4, "", "movss");
                 outAsm << "addss xmm0, xmm1\n\t";
             }else{
                 push("rax", 8);
-                valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx);
                 pop("rax", 8);
                 outAsm << "add rax, rbx\n\t";
             }
@@ -42,20 +43,20 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
         case tokenType::sub:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
+            if(res.retIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use minus(-) operator without a value." << std::endl;
                 exit(1);
             }
 
             if(type.type == tokenType::_float && type.ptrReadBytes == -1){
                 push("xmm0", 4, "", "movss");
-                valsIdx = genSingle(valsIdx + 1, "xmm0", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "xmm0", stmtIdx);
                 pop("xmm1", 4, "", "movss");
                 outAsm << "subss xmm1, xmm0\n\t";
                 outAsm << "movss xmm0, xmm1\n\t";
             }else{
                 push("rax", 8);
-                valsIdx = genSingle(valsIdx + 1, "rbx", stmtIdx);
+                res.retIdx = genSingle(res.retIdx + 1, "rbx", stmtIdx);
                 pop("rax", 8);
                 outAsm << "sub rax, rbx\n\t";
             }
@@ -64,21 +65,21 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
         }
 
         case tokenType::mul:{ // aka star(*) (i will change it to star in the future)
-            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
+            if(res.retIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use multiplication/derefrence(*) operator without a value." << std::endl;
                 exit(1);
             }
 
             // if the previous thing is an operator, then treat this * as a pointer
             if(isPrevOp){
-                valsIdx = genSingle(valsIdx, "rax", stmtIdx);
+                res.retIdx = genSingle(res.retIdx, "rax", stmtIdx);
                 break;
             }
 
             if(type.type == tokenType::_float){
-                valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
+                res.retIdx = genMulDiv(res.retIdx, stmtIdx, tokenType::_float);
             }else{
-                valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
+                res.retIdx = genMulDiv(res.retIdx, stmtIdx, type.type);
             } 
             isPrevOp = true;
             break;
@@ -86,22 +87,22 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
 
         case tokenType::div:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
+            if(res.retIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use division(/) operator without a value." << std::endl;
                 exit(1);
             }
 
             if(type.type == tokenType::_float){
-                valsIdx = genMulDiv(valsIdx, stmtIdx, tokenType::_float);
+                res.retIdx = genMulDiv(res.retIdx, stmtIdx, tokenType::_float);
             }else{
-                valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
+                res.retIdx = genMulDiv(res.retIdx, stmtIdx, type.type);
             }
             break;
         }
 
         case tokenType::percent:{
             isPrevOp = true;
-            if(valsIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
+            if(res.retIdx + 1 >= prog->sts.at(stmtIdx).vals.size()){
                 std::cerr << "Error, cannot use modulo(%) operator without a value." << std::endl;
                 exit(1);
             }
@@ -111,7 +112,7 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
                 exit(1);
             }
 
-            valsIdx = genMulDiv(valsIdx, stmtIdx, type.type);
+            res.retIdx = genMulDiv(res.retIdx, stmtIdx, type.type);
             break;
         }
 
@@ -128,16 +129,16 @@ int genAsm::genExpr(size_t stmtIdx, int valsIdx)
         case tokenType::curlyOpen:
         case tokenType::bracketClose:
         case tokenType::comma:
-            return valsIdx;
+            return res;
 
 
         default:
-            valsIdx = genSingle(valsIdx, "rax", stmtIdx);
+            res.retIdx = genSingle(res.retIdx, "rax", stmtIdx);
             isPrevOp = false;
             break;
         }
     }
-    return valsIdx;
+    return res;
 }
 
 int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
@@ -149,7 +150,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
         if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
             if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
                 push("rax", 8);
-                idx = genExpr(stmtIdx, idx + 2);
+                idx = genExpr(stmtIdx, idx + 2).retIdx;
                 pop("rbx", 8);
                 outAsm << "mul rbx\n\t";
                 return idx;
@@ -164,7 +165,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
         }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
             if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
                 push("rax", 8);
-                idx = genExpr(stmtIdx, idx + 2);
+                idx = genExpr(stmtIdx, idx + 2).retIdx;
                 outAsm << "mov rbx, rax\n\t";
                 pop("rax", 8);
                 outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
@@ -180,7 +181,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
         else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::percent){
             if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
                 push("rax", 8);
-                idx = genExpr(stmtIdx, idx + 2);
+                idx = genExpr(stmtIdx, idx + 2).retIdx;
                 outAsm << "mov rbx, rax\n\t";
                 pop("rax", 8);
                 outAsm << "xor rdx, rdx\n\tdiv rbx\n\t";
@@ -203,7 +204,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
         if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::mul){
             if(prog->sts.at(stmtIdx).vals.at(idx + 1).type == tokenType::parenOpen){
                 push("xmm0", 4, "", "movss");
-                idx = genExpr(stmtIdx, idx + 2);
+                idx = genExpr(stmtIdx, idx + 2).retIdx;
                 pop("xmm1", 4, "movss");
                 outAsm << "mulss xmm0, xmm1\n\t";
                 return idx;
@@ -218,7 +219,7 @@ int genAsm::genMulDiv(int idx, size_t stmtIdx, tokenType type)
         }else if(prog->sts.at(stmtIdx).vals.at(idx).type == tokenType::div){
             if(prog->sts.at(stmtIdx).vals.at(idx+1).type == tokenType::parenOpen){
                 push("xmm0", 4, "", "movss");
-                idx = genExpr(stmtIdx, idx + 2);
+                idx = genExpr(stmtIdx, idx + 2).retIdx;
                 pop("xmm1", 4, "", "movss");
                 outAsm << "divss xmm1, xmm0\n\tmovss xmm0, xmm1\n\t";
                 return idx;

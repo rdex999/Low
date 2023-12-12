@@ -100,7 +100,7 @@ int genAsm::genIfExpr(int from, int lable, size_t stmtIdx, bool invert, bool han
                 }
             }
             afterCmpCheck:
-            from = genExpr(stmtIdx, from) - 1;
+            from = genExpr(stmtIdx, from).retIdx - 1;
 
             // i might change this way of checking if this is a 'self check' (if x {...})
             if(prog->sts.at(stmtIdx).vals.at(from+1).type == tokenType::_and ||
@@ -131,14 +131,14 @@ int genAsm::cmpTwo(size_t stmtIdx, int idx, tokenType cmpType)
     {
     case tokenType::_int:
         push("rax", 8);
-        idx = genExpr(stmtIdx, idx+1) - 1;
+        idx = genExpr(stmtIdx, idx+1).retIdx - 1;
         pop("rbx", 8);
         outAsm << "cmp rbx, rax\n\t";
         break;
 
     case tokenType::_float:
         push("xmm0", 4, "", "movss");
-        idx = genExpr(stmtIdx, idx+1) - 1;
+        idx = genExpr(stmtIdx, idx+1).retIdx - 1;
         pop("xmm1", 4, "", "movss");
         outAsm << "ucomiss xmm1, xmm0\n\t";
         break;

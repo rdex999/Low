@@ -50,7 +50,7 @@ inline void genAsm::genFloat(int idx)
                     prog->sts.at(index).vals.at(i+1).type == tokenType::equal) // float x = ...;
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
-                        i = genExpr(index, i+2);
+                        i = genExpr(index, i+2).retIdx;
                         if(v.ptrReadBytes == -1){
                             push("xmm0", v.size, "", "movss");
                         }else{

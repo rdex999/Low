@@ -265,9 +265,6 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
                 outAsm << "subss xmm0, xmm1\n\t";
             }
             outAsm << "movss [rbx], xmm0\n\t";
-            if(reg && reg != (std::string)"xmm0"){
-                outAsm << "movss " << reg << ", xmm0\n\t";
-            }
 
         }else{
             if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
@@ -292,9 +289,6 @@ inline int genAsm::genPreIncDec(int idx, const char* reg)
                 outAsm << "subss xmm0, xmm1\n\t";
             }
             outAsm << "movss [rbp - " << v->stackLoc << "], xmm0\n\t";
-            if(reg && reg != (std::string)"xmm0"){
-                outAsm << "movss " << reg << ", xmm0\n\t";
-            }
         }else{
             if(prog->sts.at(index).vals.at(idx).type == tokenType::pp){
                 outAsm << "inc " << selectWord(v->size) << " [rbp - " << v->stackLoc << "]\n\t";

@@ -239,7 +239,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
     }
 
     case tokenType::parenOpen:
-        retIdx = genExpr(stmtIdx, retIdx + 1);
+        retIdx = genExpr(stmtIdx, retIdx + 1).retIdx;
         if((std::string)reg != "rax"){
             outAsm << "mov " << reg << ", rax\n\t";
         }
@@ -298,7 +298,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
             }else{
                 if(type.type == tokenType::_float){
                     push("rax", 8);
-                    retIdx = genExpr(stmtIdx, retIdx+2);
+                    retIdx = genExpr(stmtIdx, retIdx+2).retIdx;
                     outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
                     outAsm << "mul rcx\n\t";
                     pop("rbx", 8);
@@ -310,7 +310,7 @@ int genAsm::genSingle(int idx, const char* reg, size_t stmtIdx, bool checkPostPr
                     }
                 }else{
                     push("rax", 8);
-                    retIdx = genExpr(stmtIdx, retIdx+2);
+                    retIdx = genExpr(stmtIdx, retIdx+2).retIdx;
                     outAsm << "mov rcx, " << type.ptrReadBytes << "\n\t";
                     outAsm << "mul rcx\n\t";
                     pop("rbx", 8);

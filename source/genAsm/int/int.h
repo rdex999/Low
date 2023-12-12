@@ -50,7 +50,7 @@ inline void genAsm::genInt(int idx)
                     prog->sts.at(index).vals.at(i+1).type == tokenType::equal) // int x = ...;
                 {
                     if(i+2 < prog->sts.at(index).vals.size()){
-                        i = genExpr(index, i+2);
+                        i = genExpr(index, i+2).retIdx;
                         push(selectReg("rax", v.size).c_str(), v.size);
                         i += 2;
                     }else{

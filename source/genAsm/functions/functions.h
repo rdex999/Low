@@ -36,7 +36,7 @@ inline int genAsm::genFunctionCall(int idx)
         int xmmRegistersCount = 0;
         outAsm << "sub rsp, 8\n\t";
         for(int i = argsIdxs.size() - 1; i>=0; --i){
-            retIdx = genExpr(index, argsIdxs.at(i));
+            retIdx = genExpr(index, argsIdxs.at(i)).retIdx;
             eType exprType = getType(index, argsIdxs.at(i));
             if(exprType.type == (tokenType)0){
                 std::cerr << "Error, unknown expresion type. Try casting to something." << std::endl;

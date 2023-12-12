@@ -12,6 +12,13 @@ struct eType
     int ptrReadBytes = -1;
 };
 
+// the result of generating an expression
+struct exprRes
+{
+    int retIdx;
+    tokenType type = (tokenType)0;
+};
+
 class genAsm
 {
     public: 
@@ -89,9 +96,9 @@ class genAsm
 
         void genStmt();
 
-        // the final value is in RDX
-        // @returns {int} the index of i. used when there are parenthesis
-        int genExpr(size_t stmtIdx, int valsIdx);
+        // the final value is in RAX
+        // @returns {exprRes} the index of i. used when there are parenthesis
+        exprRes genExpr(size_t stmtIdx, int valsIdx);
 
         // the result is in RAX
         // @returns {int} the index
