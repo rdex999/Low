@@ -1,6 +1,7 @@
 # Low
 The "Low" programming language. \
 I will probably change the name in the future.
+Please note that this project was made just for fun, nothing serious.
 
 # Compiling
 compile a .low file with the following command:
@@ -9,16 +10,17 @@ low main.low -o main
 ```
 
 # Contributing
-As this languege is currently in development, I will not accept pull requests.
+I have stopped this project, please do not contribute. \
+I might create a new compiler in the future, and this time start it right so i wont mess it up.
 
 # Syntax
 Every statement MUST end with a semicolon ( ; ) \
-Usualy if you miss a semicolon the compiler will throw an error, but it might not, and can just generate bad code. (will be fixed in the future)
+If you miss a semicolon the compiler might throw an error, but usualy it doesnt and will just generate bad code.
 
 ## Variables
-there are currently 2 types of variables, int, and char \
+There are currently int, char, and float. \
 You can declare variables with, or without a value. \
-Note that when declaring a variable without a value it will have the old value that was used by other programs in that location. \
+Note that when declaring a variable without a value it will have the old value that was used by other programs in its memory location. \
 Usage: `type varName;` \
 Example: `int x;`
 
@@ -51,7 +53,7 @@ myArr[1] = 683242;
 ## Printing
 There are function from the low standard library to print to the console, explained below.
 ### stdout
-For printing values with text, use the print funnction. Example: \
+For printing values with text, use the print function. Example: \
 `print("value is %i \n");` 
 #### Formating options
 %i -> signed 32 bit int \
